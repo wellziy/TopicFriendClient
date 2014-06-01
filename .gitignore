@@ -1,0 +1,10 @@
+#忽略bin、gen、.settings文件夹
+bin/
+gen/
+.settings/
+
+#忽略eclispe工程文件
+.project
+.classpath
+project.properties
+proguard-project.txt
