@@ -1,4 +1,6 @@
-package topicfriendclient;
+package topicfriendclient.activity;
+
+import topicfriendclient.database.AppController;
 
 import com.example.topicfriend.R;
 

@@ -1,9 +1,18 @@
-package topicfriendclient;
+package topicfriendclient.activity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import topicfriendclient.database.AppController;
+import topicfriendclient.database.Channel;
+import topicfriendclient.database.ChannelManager;
+import topicfriendclient.database.ChatMessage;
+import topicfriendclient.database.Consts;
+import topicfriendclient.database.TimeUtil;
+import topicfriendclient.database.User;
+import topicfriendclient.database.UserManager;
 
 import com.example.topicfriend.R;
 

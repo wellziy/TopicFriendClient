@@ -1,4 +1,4 @@
-package topicfriendclient;
+package topicfriendclient.database;
 
 public class ChatMessage {
 	
@@ -13,8 +13,8 @@ public class ChatMessage {
 	}
 	
 	// getters and setters
-	int getSenderID() { return mSenderID; }
-	long getTimestamp() { return mTimestamp; } 
-	String getContent() { return mContent; }
+	public int getSenderID() { return mSenderID; }
+	public long getTimestamp() { return mTimestamp; } 
+	public String getContent() { return mContent; }
 	
 }

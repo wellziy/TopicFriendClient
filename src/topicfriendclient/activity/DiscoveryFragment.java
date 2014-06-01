@@ -1,4 +1,4 @@
-package topicfriendclient;
+package topicfriendclient.activity;
 
 import com.example.topicfriend.R;
 

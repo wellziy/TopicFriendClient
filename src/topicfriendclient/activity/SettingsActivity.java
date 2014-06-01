@@ -1,4 +1,4 @@
-package topicfriendclient;
+package topicfriendclient.activity;
 
 import android.annotation.TargetApi;
 import android.content.Context;

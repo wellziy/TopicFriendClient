@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="topicfriendclient.MainActivity"
+            android:name="topicfriendclient.activity.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,16 +23,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="topicfriendclient.LoginActivity"
+            android:name="topicfriendclient.activity.LoginActivity"
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible" >
         </activity>
         <activity
-            android:name="topicfriendclient.SettingsActivity"
+        	android:name="topicfriendclient.activity.SettingsActivity"
             android:label="@string/title_activity_settings" >
         </activity>
         <activity
-            android:name="topicfriendclient.DialogActivity"
+			android:name="topicfriendclient.activity.DialogActivity"
             android:label="@string/title_activity_dialog" android:windowSoftInputMode="adjustPan">
         </activity>
     </application>

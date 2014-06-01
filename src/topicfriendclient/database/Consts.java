@@ -1,4 +1,4 @@
-package topicfriendclient;
+package topicfriendclient.database;
 
 public class Consts {
 
