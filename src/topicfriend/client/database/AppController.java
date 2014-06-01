@@ -1,4 +1,4 @@
-package topicfriendclient.database;
+package topicfriend.client.database;
 
 public class AppController {
 	

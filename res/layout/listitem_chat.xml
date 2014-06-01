@@ -25,11 +25,13 @@
 			android:text="nickname"
 			android:textSize="16dp" />
 		
-		<TextView android:id="@+id/msg" 
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content" 
-			android:text="message"
-			android:textSize="13dp" />
+		<TextView
+		    android:id="@+id/msg"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:singleLine="true"
+		    android:text="message"
+		    android:textSize="13dp" />
 
 	</LinearLayout>
 	

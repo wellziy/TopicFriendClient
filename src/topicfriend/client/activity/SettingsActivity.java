@@ -1,4 +1,4 @@
-package topicfriendclient.activity;
+package topicfriend.client.activity;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -19,7 +19,8 @@ import android.text.TextUtils;
 
 import java.util.List;
 
-import com.example.topicfriend.R;
+import topicfriend.client.R;
+
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On

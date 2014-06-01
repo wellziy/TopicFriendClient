@@ -1,6 +1,6 @@
-package topicfriendclient.activity;
+package topicfriend.client.activity;
 
-import com.example.topicfriend.R;
+import topicfriend.client.R;
 
 import android.app.Fragment;
 import android.os.Bundle;

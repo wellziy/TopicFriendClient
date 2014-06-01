@@ -1,18 +1,18 @@
-package topicfriendclient.activity;
+package topicfriend.client.activity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import topicfriendclient.database.AppController;
-import topicfriendclient.database.Channel;
-import topicfriendclient.database.ChannelManager;
-import topicfriendclient.database.ChatMessage;
-import topicfriendclient.database.Consts;
-import topicfriendclient.database.UserManager;
+import topicfriend.client.database.AppController;
+import topicfriend.client.database.Channel;
+import topicfriend.client.database.ChannelManager;
+import topicfriend.client.database.ChatMessage;
+import topicfriend.client.database.Consts;
+import topicfriend.client.database.UserManager;
+import topicfriend.client.R;
 
-import com.example.topicfriend.R;
 
 import android.app.Activity;
 import android.content.Context;

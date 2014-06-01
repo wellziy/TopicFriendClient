@@ -1,43 +1,47 @@
-package topicfriendclient.activity;
+package topicfriend.client.activity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import topicfriendclient.database.AppController;
-import topicfriendclient.database.ChannelManager;
-import topicfriendclient.database.Consts;
-import topicfriendclient.database.User;
-import topicfriendclient.database.UserManager;
+import topicfriend.client.database.AppController;
+import topicfriend.client.database.Channel;
+import topicfriend.client.database.ChannelManager;
+import topicfriend.client.database.ChatMessage;
+import topicfriend.client.database.Consts;
+import topicfriend.client.database.TimeUtil;
+import topicfriend.client.database.User;
+import topicfriend.client.database.UserManager;
+import topicfriend.client.R;
 
-import com.example.topicfriend.R;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView.FindListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.AdapterView.OnItemClickListener;
 
-public class FriendFragment extends Fragment{
+public class ChatFragment extends Fragment{
 	
 	private ListView listView;
 	private ChannelManager channelManager;
 	private UserManager userManager;
 	
-	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
-		return inflater.inflate(R.layout.fragment_friend, container, false);
+		return inflater.inflate(R.layout.fragment_chat, container, false);
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -62,7 +66,7 @@ public class FriendFragment extends Fragment{
 				// get Data by position
 				@SuppressWarnings("unchecked")
 				Map<String, Object> itemData = (Map<String, Object>) listView.getAdapter().getItem(position);
-				int participantID = (Integer) itemData.get(Consts.UserID);
+				int participantID = (Integer) itemData.get(Consts.ParticipantID);
 				
 				// start DialogActivity
 				Intent intent = new Intent(getActivity(), DialogActivity.class);
@@ -80,23 +84,30 @@ public class FriendFragment extends Fragment{
 	}
 
 	public void refresh() {
-		List<User> userArray = userManager.getAllFriends();
+		List<Channel> channelArray = channelManager.getAll();
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		
-		for (User friend : userArray) {
-
+		for (Channel channel : channelArray) {
+			ChatMessage lastMessage = channel.getLastMessage();
+			if (lastMessage == null) continue;
+			
+			User user = userManager.getByID(channel.getParticipantID());
+			if (user == null) continue;
+			
 			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("name", friend.getNickname());
-			map.put("msg", friend.getSignature());
+			map.put("name", user.getNickname());
+			map.put("msg", lastMessage.getContent());
+			map.put("time", TimeUtil.convertTimestampToString(lastMessage.getTimestamp()));
 			map.put("img", android.R.drawable.ic_menu_preferences);
-			map.put(Consts.UserID, friend.getID());
+			map.put(Consts.ParticipantID, channel.getParticipantID());
 			list.add(map);
 		}
 		
-		SimpleAdapter adapter = new SimpleAdapter(getActivity(), list, R.layout.listitem_friend,
-				new String[]{"name", "msg", "img"},
-				new int[]{R.id.name, R.id.msg, R.id.img});
+		SimpleAdapter adapter = new SimpleAdapter(getActivity(), list, R.layout.listitem_chat,
+				new String[]{"name", "msg", "img", "time"},
+				new int[]{R.id.name, R.id.msg, R.id.img, R.id.time});
 		
 		listView.setAdapter(adapter);
 	}
+	
 }

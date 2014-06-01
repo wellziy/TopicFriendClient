@@ -1,8 +1,8 @@
-package topicfriendclient.activity;
+package topicfriend.client.activity;
 
-import topicfriendclient.database.AppController;
+import topicfriend.client.database.AppController;
+import topicfriend.client.R;
 
-import com.example.topicfriend.R;
 
 import android.os.Bundle;
 import android.app.ActionBar;

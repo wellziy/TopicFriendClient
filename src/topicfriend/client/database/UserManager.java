@@ -1,4 +1,4 @@
-package topicfriendclient.database;
+package topicfriend.client.database;
 
 import java.util.ArrayList;
 import java.util.Iterator;
