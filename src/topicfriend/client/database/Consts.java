@@ -11,4 +11,6 @@ public class Consts {
 	
 	public static final String AnonymousUserNickname = "anonymous user";
 	public static final String AnonymousUserSignaure = "";
+	
+	public static final String TopicID = "topicID";
 }

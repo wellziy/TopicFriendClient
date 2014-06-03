@@ -14,11 +14,13 @@ public class AppController {
 	private int mCurrentUserID = -1;
 	private UserManager mUserManager = null;
 	private ChannelManager mChannelManager = null;
+	private TopicManager mTopicManager = null;
 	
 	public void initWithUid(int uid) {
 		mCurrentUserID = uid;
 		mUserManager = new UserManager(uid);
 		mChannelManager = new ChannelManager(uid);
+		mTopicManager = new TopicManager(uid);
 		
 		////////////////////////////////////////////////////
 		for (int i=0; i<15; ++i) {
@@ -37,6 +39,9 @@ public class AppController {
 			
 		}
 		
+		for (int i=0; i<10; ++i) {
+			mTopicManager.add("topic title "+i);
+		}
 		
 		
 	}
@@ -44,6 +49,6 @@ public class AppController {
 	public int getOwnerID() { return mCurrentUserID; }
 	public UserManager getUserManager() { return mUserManager; }
 	public ChannelManager getChannelManager() { return mChannelManager; }
-	
-	
+	public TopicManager getTopicManager() { return mTopicManager; }
+	 
 }

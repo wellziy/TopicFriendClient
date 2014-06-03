@@ -5,10 +5,12 @@
     tools:context=".DiscoveryFragment" >
 
     <!-- TODO: Update blank fragment layout -->
-
-    <TextView
+    
+    <ListView
+        android:id="@+id/listview_main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="discovery_fragment" />
-
+        android:layout_height="match_parent" >
+    </ListView>
+    
+    
 </FrameLayout>

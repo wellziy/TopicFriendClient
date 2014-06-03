@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <!-- sex values -->
+    <string name="person_sex_title">性别</string>
+    <string name="person_sex_default_value">0</string>
+    <string-array name="person_sex_entry">
+        <item >男</item>
+        <item >女</item>
+    </string-array>
+    <string-array name="person_sex_value">
+        <item >0</item>
+        <item >1</item>
+    </string-array>
+    
+    <!-- nickname values -->
+    <string name="person_nickname_title">昵称</string>
+    
+    <!-- signature values -->
+    <string name="person_signature_title">个性签名</string>
+    
+    <!-- head icon -->
+    <string name="person_icon_title">头像</string>
+    
+</resources>

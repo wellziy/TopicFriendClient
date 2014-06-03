@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" android:title="Personal Infomation">
+    <EditTextPreference android:dialogTitle="@string/person_nickname_title" android:title="@string/person_nickname_title" android:key="edit_nickname"/>
+    <ListPreference android:entries="@array/person_sex_entry" android:entryValues="@array/person_sex_value" android:title="@string/person_sex_title" android:negativeButtonText="@null" android:positiveButtonText="@null" android:defaultValue="@string/person_sex_default_value" android:key="list_sex"/>
+    <EditTextPreference android:key="edit_signature" android:title="@string/person_signature_title" android:dialogTitle="@string/person_signature_title"/>
+    
+    <topicfriend.client.activity.SelectImagePreference   
+        android:key="select_image_icon"
+        android:persistent="false"
+        android:title="头像"
+        android:summary="请选择投降"
+        android:widgetLayout="@layout/preference_widget_image"
+        />
+
+</PreferenceScreen>

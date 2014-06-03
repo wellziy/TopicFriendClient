@@ -200,16 +200,6 @@ public class DialogActivity extends Activity {
 			iconImageView.setLayoutParams(iconlayoutParam);
 			msgTextView.setLayoutParams(msglayoutParam);
 			
-
-//			BitmapDrawable bitmapDrawable = null;
-//			try {
-//				bitmapDrawable = (BitmapDrawable) BitmapDrawable.createFromStream(getAssets().open("cocos2dx_icon.png"), "test");
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			iconImageView.setImageDrawable(bitmapDrawable);
-			
 			return layout;
 		}
 		
