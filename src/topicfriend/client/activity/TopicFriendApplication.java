@@ -1,6 +1,7 @@
 package topicfriend.client.activity;
 
 import topicfriend.client.database.AppController;
+import topicfriend.client.database.ResourceManager;
 import android.app.Application;
 
 public class TopicFriendApplication extends Application{

@@ -1,6 +1,8 @@
 package topicfriend.client.activity;
 
 import topicfriend.client.database.AppController;
+import topicfriend.client.database.Consts;
+import topicfriend.client.database.ResourceManager;
 import topicfriend.client.R;
 
 
@@ -78,7 +80,9 @@ public class MainActivity extends Activity {
 		switch(item.getItemId()) {
 		case R.id.action_profile:
 			
-			startActivity(new Intent(this, PersonalInfoActivity.class));
+			Intent intent = new Intent(this, PersonalInfoActivity.class);
+			intent.putExtra(Consts.UserID, AppController.getInstance().getOwnerID());
+			startActivity(intent);
 			
 			break;
 		}

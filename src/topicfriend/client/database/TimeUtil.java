@@ -1,5 +1,6 @@
 package topicfriend.client.database;
 
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -16,6 +17,7 @@ public class TimeUtil {
 	public static String getCurrentTimeString() {
 		return convertTimestampToString(getCurrentTimestamp());
 	}
+	
 	
 	public static String convertTimestampToString(long timeStamp) {
 		SimpleDateFormat sdf = new SimpleDateFormat(sTimeFormat, Locale.getDefault());

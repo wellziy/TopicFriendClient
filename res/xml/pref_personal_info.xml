@@ -8,8 +8,8 @@
         android:key="select_image_icon"
         android:persistent="false"
         android:title="头像"
-        android:summary="请选择投降"
         android:widgetLayout="@layout/preference_widget_image"
         />
+    <Preference android:key="button_chat" android:title="@string/person_send_message"/>
 
 </PreferenceScreen>

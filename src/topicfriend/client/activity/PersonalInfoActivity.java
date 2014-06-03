@@ -3,6 +3,10 @@ package topicfriend.client.activity;
 import topicfriend.client.R;
 import topicfriend.client.R.layout;
 import topicfriend.client.R.menu;
+import topicfriend.client.database.AppController;
+import topicfriend.client.database.Consts;
+import topicfriend.client.database.User;
+import topicfriend.client.database.UserManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -10,23 +14,47 @@ import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.text.TextUtils;
 import android.view.Menu;
+import android.widget.Button;
 
 public class PersonalInfoActivity extends PreferenceActivity implements OnPreferenceChangeListener {
 
+	private boolean mCanEdit = false;
+	private int mUserID = Consts.InvalidID;
+	private UserManager userManager = null;
+	
+	private ListPreference listSexPreference = null;
+	private EditTextPreference editTextNicknamePreference = null;
+	private EditTextPreference editTextSignaturePreference = null;
+	private SelectImagePreference selectImagePreference = null;
+	private Preference buttonChatPreference = null;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
+		
+		userManager = AppController.getInstance().getUserManager();
+		// get can edit
+		mUserID = getIntent().getIntExtra(Consts.UserID, Consts.InvalidID);
+		if (mUserID == AppController.getInstance().getOwnerID()) {
+			mCanEdit = true;
+		}
+		else {
+			mCanEdit = false;
+		}
+		
 		
 		this.beforePreferenceSceneCreate();
 		
@@ -34,13 +62,14 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		addPreferencesFromResource(R.xml.pref_personal_info);
 
 		// bind all preferences to a special OnPreferenceChangeListener
-		bindPreferenceSummaryToValue(findPreference("list_sex"));
-		bindPreferenceSummaryToValue(findPreference("edit_nickname"));
-		bindPreferenceSummaryToValue(findPreference("edit_signature"));
+		listSexPreference = (ListPreference) findPreference("list_sex");
+		editTextNicknamePreference = (EditTextPreference) findPreference("edit_nickname");
+		editTextSignaturePreference = (EditTextPreference) findPreference("edit_signature");
+		selectImagePreference = (SelectImagePreference) findPreference("select_image_icon");
+		buttonChatPreference = (Preference) findPreference("button_chat");
 		
-		SelectImagePreference selectImagePreference = (SelectImagePreference) findPreference("select_image_icon");
-		selectImagePreference.setActivity(this);
-		bindPreferenceSummaryToValue(selectImagePreference);
+		this.afterPreferenceSceneCreate();
+		
 	}
 
 	@Override
@@ -68,15 +97,52 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	private void beforePreferenceSceneCreate() {
 		
 		//TODO: download information from server
-		
+
+		User user = userManager.getByID(mUserID);
 		SharedPreferences sharedPrefs = getPreferenceManager().getSharedPreferences();
 		Editor editor = sharedPrefs.edit();
-		
-		editor.putString("edit_nickname", "test nickname");
+		editor.putString("edit_nickname", user.getNickname());
 		editor.putString("list_sex", ""+0);
-		editor.putString("edit_signature", "test signature");
-		
+		editor.putString("edit_signature", user.getSignature());			
 		editor.commit();
+		
+	}
+	
+	private void afterPreferenceSceneCreate() {
+		// initialize Image Select Preference
+		final User user = userManager.getByID(mUserID);
+		selectImagePreference.setActivity(this);
+		selectImagePreference.changeImage(user.getIconName());
+		
+		bindPreferenceSummaryToValue(listSexPreference);
+		bindPreferenceSummaryToValue(editTextNicknamePreference);
+		bindPreferenceSummaryToValue(editTextSignaturePreference);
+		bindPreferenceSummaryToValue(selectImagePreference);
+		
+		if (mCanEdit == true) {
+			
+			
+			buttonChatPreference.setTitle("");
+			buttonChatPreference.setEnabled(false);
+		}
+		else {
+			listSexPreference.setSelectable(false);
+			editTextNicknamePreference.setSelectable(false);
+			editTextSignaturePreference.setSelectable(false);
+			selectImagePreference.setSelectable(false);
+			
+			buttonChatPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					
+					Intent intent = new Intent(PersonalInfoActivity.this, DialogActivity.class);
+					intent.putExtra(Consts.ParticipantID, user.getID());
+					startActivity(intent);
+					
+					return true;
+				}
+			});
+		}
 	}
 	
 	private void afterPreferenceSceneDestroy() {
@@ -110,49 +176,6 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 						.setSummary(index >= 0 ? listPreference.getEntries()[index]
 								: null);
 			}
-			
-			
-			
-//			if (preference instanceof ListPreference) {
-//				// For list preferences, look up the correct display value in
-//				// the preference's 'entries' list.
-//				ListPreference listPreference = (ListPreference) preference;
-//				int index = listPreference.findIndexOfValue(stringValue);
-//
-//				// Set the summary to reflect the new value.
-//				preference
-//						.setSummary(index >= 0 ? listPreference.getEntries()[index]
-//								: null);
-//
-//			} else if (preference instanceof RingtonePreference) {
-//				// For ringtone preferences, look up the correct display value
-//				// using RingtoneManager.
-//				if (TextUtils.isEmpty(stringValue)) {
-//					// Empty values correspond to 'silent' (no ringtone).
-//					preference.setSummary(R.string.pref_ringtone_silent);
-//
-//				} else {
-//					Ringtone ringtone = RingtoneManager.getRingtone(
-//							preference.getContext(), Uri.parse(stringValue));
-//
-//					if (ringtone == null) {
-//						// Clear the summary if there was a lookup error.
-//						preference.setSummary(null);
-//					} else {
-//						// Set the summary to reflect the new ringtone display
-//						// name.
-//						String name = ringtone
-//								.getTitle(preference.getContext());
-//						preference.setSummary(name);
-//					}
-//				}
-//
-//			} 
-//			else {
-//				// For all other preferences, set the summary to the value's
-//				// simple string representation.
-//				preference.setSummary(stringValue);
-//			}
 			return true;
 		}
 	};

@@ -22,4 +22,7 @@
     <!-- head icon -->
     <string name="person_icon_title">头像</string>
     
+    <!-- chat button -->
+    <string name="person_send_message">与他/她聊天</string>
+    
 </resources>

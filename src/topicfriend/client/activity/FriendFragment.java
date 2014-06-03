@@ -8,6 +8,7 @@ import java.util.Map;
 import topicfriend.client.database.AppController;
 import topicfriend.client.database.ChannelManager;
 import topicfriend.client.database.Consts;
+import topicfriend.client.database.ResourceManager;
 import topicfriend.client.database.User;
 import topicfriend.client.database.UserManager;
 import topicfriend.client.R;
@@ -67,9 +68,13 @@ public class FriendFragment extends Fragment{
 				Map<String, Object> itemData = (Map<String, Object>) listView.getAdapter().getItem(position);
 				int participantID = (Integer) itemData.get(Consts.UserID);
 				
-				// start DialogActivity
-				Intent intent = new Intent(getActivity(), DialogActivity.class);
-				intent.putExtra(Consts.ParticipantID, participantID);
+//				// start DialogActivity
+//				Intent intent = new Intent(getActivity(), DialogActivity.class);
+//				intent.putExtra(Consts.ParticipantID, participantID);
+//				startActivity(intent);
+				// start PersonnalInfoActivity
+				Intent intent = new Intent(getActivity(), PersonalInfoActivity.class);
+				intent.putExtra(Consts.UserID, participantID);
 				startActivity(intent);
 			}
 		});

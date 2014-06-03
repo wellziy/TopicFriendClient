@@ -10,6 +10,7 @@ import topicfriend.client.database.Channel;
 import topicfriend.client.database.ChannelManager;
 import topicfriend.client.database.ChatMessage;
 import topicfriend.client.database.Consts;
+import topicfriend.client.database.ResourceManager;
 import topicfriend.client.database.UserManager;
 import topicfriend.client.R;
 

@@ -3,6 +3,7 @@ package topicfriend.client.activity;
 import java.util.ArrayList;
 
 import topicfriend.client.R;
+import topicfriend.client.database.ResourceManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.preference.Preference;
@@ -72,11 +73,11 @@ public class SelectImagePreference extends Preference{
         mSelectImageDialog.show();   
     }
 	
-    private void changeImage(String bitmapName) {
+    public void changeImage(String bitmapName) {
     	Bitmap bitmap = ResourceManager.getInstance().getBitmapFromAsset(bitmapName);
-		//if (bitmap != null) {
-		previewImageView.setImageBitmap(bitmap);
-		//}
+    	if (previewImageView != null) {
+    		previewImageView.setImageBitmap(bitmap);
+    	}
 		mSelectImageName = bitmapName;
     }
     

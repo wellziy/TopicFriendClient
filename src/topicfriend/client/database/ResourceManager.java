@@ -1,4 +1,4 @@
-package topicfriend.client.activity;
+package topicfriend.client.database;
 
 import java.io.IOException;
 import java.io.InputStream;
