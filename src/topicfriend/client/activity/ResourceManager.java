@@ -11,6 +11,9 @@ import android.graphics.drawable.BitmapDrawable;
 
 public class ResourceManager {
 	
+	public static int ScreenWidth = 720;
+	public static int ScreenHeight = 1280;
+	
 	private Context mContext = null;
 	private Map<String, Bitmap> mBitmapCache = new HashMap<String, Bitmap>();
 	private static ResourceManager sResourceManager = new ResourceManager();

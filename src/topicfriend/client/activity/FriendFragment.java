@@ -15,14 +15,17 @@ import topicfriend.client.R;
 
 import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.SimpleAdapter.ViewBinder;
 
 public class FriendFragment extends Fragment{
 	
@@ -84,11 +87,11 @@ public class FriendFragment extends Fragment{
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		
 		for (User friend : userArray) {
-
+			
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("name", friend.getNickname());
 			map.put("msg", friend.getSignature());
-			map.put("img", android.R.drawable.ic_menu_preferences);
+			map.put("img", ResourceManager.getInstance().getBitmapFromAsset(friend.getIconName()));
 			map.put(Consts.UserID, friend.getID());
 			list.add(map);
 		}
@@ -96,6 +99,19 @@ public class FriendFragment extends Fragment{
 		SimpleAdapter adapter = new SimpleAdapter(getActivity(), list, R.layout.listitem_friend,
 				new String[]{"name", "msg", "img"},
 				new int[]{R.id.name, R.id.msg, R.id.img});
+		
+		adapter.setViewBinder(new ViewBinder() {
+			@Override
+			public boolean setViewValue(View view, Object data, String textRepresentation) {
+				if( view instanceof ImageView && data instanceof Bitmap){   
+			        ImageView iv = (ImageView) view;   
+			        iv.setImageBitmap((Bitmap) data);   
+			        return true;   
+			    }else {
+			        return false;   
+			    }   
+			}
+		});
 		
 		listView.setAdapter(adapter);
 	}

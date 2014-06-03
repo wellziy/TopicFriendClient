@@ -1,9 +1,11 @@
 package topicfriend.client.activity;
 
 import topicfriend.client.R;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
@@ -16,12 +18,12 @@ public class SelectImageDialog extends Dialog{
 		public void onItemSelected(int index, String imageName);
 	}
 	
-	private Context mContext;
+	private Activity mContext;
 	private DialogListener mListener;
 	private GridLayout mGridLayout;
 	private int mImageCounter;
 	
-	public SelectImageDialog(Context context, int theme) {
+	public SelectImageDialog(Activity context, int theme) {
 		super(context, theme);
 		setContentView(R.layout.dialog_select_icon);
 		setTitle("«Î—°‘ÒÕº∆¨");
@@ -68,8 +70,9 @@ public class SelectImageDialog extends Dialog{
 		
 		imageView.setScaleType(ImageView.ScaleType.FIT_XY);
 		GridLayout.LayoutParams param = new GridLayout.LayoutParams();
-		param.width = 80;
-		param.height = 80;
+		
+		param.width = ResourceManager.ScreenWidth / 4;
+		param.height = param.width;
 		imageView.setLayoutParams(param);
 		
 		// for testing

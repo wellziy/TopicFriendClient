@@ -23,8 +23,9 @@ public class AppController {
 		mTopicManager = new TopicManager(uid);
 		
 		////////////////////////////////////////////////////
+		mUserManager.add(new User(mCurrentUserID, "Beadle", "signature", ""));
 		for (int i=0; i<15; ++i) {
-			User user = new User(i, "name"+i, "signature"+i);
+			User user = new User(i, "name"+i, "signature"+i, "icon_"+(int)(1+Math.random()*8)+".jpg");
 			if (Math.random() > 0.5f) {
 				user.setRelation(User.Relation.RELATION_FRIEND);
 			}

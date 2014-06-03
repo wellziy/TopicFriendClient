@@ -8,16 +8,18 @@ public class User {
 	};
 	
 	// attributes
-	private int mUid;
-	private Relation mRelation;
-	private String mNickname;
-	private String mSignature;
+	private int mUid = Consts.InvalidID;
+	private Relation mRelation = Relation.RELATION_STRANGER;
+	private String mNickname = "";
+	private String mSignature = "";
+	private String mIconName = "";
 	
 	// getters and setters
 	public int getID() { return mUid; }
 	public Relation getRelation() { return mRelation; }
 	public String getNickname() { return mNickname; }
 	public String getSignature() { return mSignature; }
+	public String getIconName() { return mIconName; }
 	
 	public void setRelation(Relation r) { mRelation = r; }
 	
@@ -26,10 +28,11 @@ public class User {
 	public boolean isStranger() { return mRelation == Relation.RELATION_STRANGER; }
 	
 	// constructors
-	public User(int uid, String nickname, String signature) {
+	public User(int uid, String nickname, String signature, String iconName) {
 		mUid = uid;
 		mRelation = Relation.RELATION_STRANGER;
 		mNickname = nickname;
 		mSignature = signature;
+		mIconName = iconName;
 	}
 }

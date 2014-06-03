@@ -19,6 +19,7 @@ import topicfriend.client.R;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,8 +27,10 @@ import android.view.ViewGroup;
 import android.webkit.WebView.FindListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.SimpleAdapter.ViewBinder;
 
 public class ChatFragment extends Fragment{
 	
@@ -94,11 +97,13 @@ public class ChatFragment extends Fragment{
 			User user = userManager.getByID(channel.getParticipantID());
 			if (user == null) continue;
 			
+			Bitmap bitmap = ResourceManager.getInstance().getBitmapFromAsset(user.getIconName());
+			
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("name", user.getNickname());
 			map.put("msg", lastMessage.getContent());
 			map.put("time", TimeUtil.convertTimestampToString(lastMessage.getTimestamp()));
-			map.put("img", android.R.drawable.ic_menu_preferences);
+			map.put("img", bitmap);
 			map.put(Consts.ParticipantID, channel.getParticipantID());
 			list.add(map);
 		}
@@ -106,6 +111,19 @@ public class ChatFragment extends Fragment{
 		SimpleAdapter adapter = new SimpleAdapter(getActivity(), list, R.layout.listitem_chat,
 				new String[]{"name", "msg", "img", "time"},
 				new int[]{R.id.name, R.id.msg, R.id.img, R.id.time});
+		
+		adapter.setViewBinder(new ViewBinder() {
+			@Override
+			public boolean setViewValue(View view, Object data, String textRepresentation) {
+				if( view instanceof ImageView && data instanceof Bitmap){   
+			        ImageView iv = (ImageView) view;   
+			        iv.setImageBitmap((Bitmap) data);   
+			        return true;   
+			    }else {
+			        return false;   
+			    }   
+			}
+		});
 		
 		listView.setAdapter(adapter);
 	}

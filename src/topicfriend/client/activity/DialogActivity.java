@@ -18,6 +18,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -26,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -89,7 +91,8 @@ public class DialogActivity extends Activity {
 			boolean isRight = false;
 			if (chatMsg.getSenderID() == channelManager.getOwnerID()) 
 				isRight = true;
-			this.addMessageToListView(android.R.drawable.ic_menu_edit, chatMsg.getContent(), isRight);
+			this.addMessageToListView(userManager.getByID(chatMsg.getSenderID()).getIconName(), 
+					chatMsg.getContent(), isRight);
 		}
 		
 	}
@@ -117,10 +120,10 @@ public class DialogActivity extends Activity {
 			isRight = true;
 		
 		channel.push(senderID, msg);
-		addMessageToListView(android.R.drawable.ic_media_play, msg, isRight);
+		addMessageToListView(userManager.getByID(senderID).getIconName(), msg, isRight);
 	}
 
-	public void addMessageToListView(int icon, String msg, boolean isRight) {
+	public void addMessageToListView(String icon, String msg, boolean isRight) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("img", icon);
 		map.put("msg", msg);
@@ -168,15 +171,16 @@ public class DialogActivity extends Activity {
 			
 			// inflate data
 			boolean isRight = (Boolean) data.get(position).get("isRight");
-			int iconId = (Integer) data.get(position).get("img");
+			String iconName = (String) data.get(position).get("img");
 			String msgString = (String) data.get(position).get("msg");
-			iconImageView.setImageResource(iconId);
-			msgTextView.setText(msgString);
-			
+
+			iconImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+			iconImageView.setImageBitmap(ResourceManager.getInstance().getBitmapFromAsset(iconName));
 			// set icon ImageView layout parameters
+			int iconSize = ResourceManager.ScreenWidth / 6;
 			RelativeLayout.LayoutParams iconlayoutParam = new RelativeLayout.LayoutParams(
-					RelativeLayout.LayoutParams.WRAP_CONTENT,
-					RelativeLayout.LayoutParams.WRAP_CONTENT);
+					iconSize,
+					iconSize);
 			iconlayoutParam.setMargins(5, 5, 5, 5);
 			
 
@@ -185,6 +189,7 @@ public class DialogActivity extends Activity {
 					RelativeLayout.LayoutParams.WRAP_CONTENT,
 					RelativeLayout.LayoutParams.WRAP_CONTENT);
 			msglayoutParam.setMargins(5, 5, 5, 5);
+			msgTextView.setText(msgString);
 			
 			// layout
 			if (isRight) {

@@ -10,7 +10,10 @@ import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.util.DisplayMetrics;
 import android.view.Menu;
+import android.view.MenuItem;
 
 public class MainActivity extends Activity {
 
@@ -48,6 +51,12 @@ public class MainActivity extends Activity {
         
         // init data and current user
         AppController.getInstance().initWithUid(999);
+        
+        // init resource manager
+        DisplayMetrics metric = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metric);
+		ResourceManager.ScreenWidth = (int) metric.widthPixels;
+		ResourceManager.ScreenHeight = (int) metric.heightPixels;
 		
 	}
 	
@@ -59,6 +68,28 @@ public class MainActivity extends Activity {
 	}
 	
 	
+
+
+
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+
+		switch(item.getItemId()) {
+		case R.id.action_profile:
+			
+			startActivity(new Intent(this, PersonalInfoActivity.class));
+			
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+
+
+
+
+
 	// 实例化 tabs 的监听类   
 	class MyTabsListener implements ActionBar.TabListener {  
 	    public Fragment fragment;  
