@@ -1,9 +1,8 @@
-#忽略bin、gen、.settings文件夹
 bin/
 gen/
+.git/
+.svn/
 .settings/
-
-#忽略eclispe工程文件
 .project
 .classpath
 project.properties
