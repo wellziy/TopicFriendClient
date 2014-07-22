@@ -1,6 +1,5 @@
 package topicfriend.client.activity;
 
-import topicfriend.client.database.AppController;
 import topicfriend.client.database.ResourceManager;
 import android.app.Application;
 
@@ -12,18 +11,17 @@ public class TopicFriendApplication extends Application{
 		
 		// initialize some singletons
 		ResourceManager.getInstance().init(this);
-		AppController.getInstance();
 		
 		System.out.println("custom application initialize!");
 	}
 
 	@Override
-	public void onTerminate() {
-		super.onTerminate();
+	protected void finalize() throws Throwable {
+		// TODO Auto-generated method stub
+		super.finalize();
 		
-		ResourceManager.getInstance().clearAllBitmaps();
+		ResourceManager.purgeInstance();
 	}
-
 	
 	
 }

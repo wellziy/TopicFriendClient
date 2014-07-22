@@ -8,13 +8,13 @@ import java.util.Map;
 import topicfriend.client.database.AppController;
 import topicfriend.client.database.Channel;
 import topicfriend.client.database.ChannelManager;
-import topicfriend.client.database.ChatMessage;
 import topicfriend.client.database.Consts;
 import topicfriend.client.database.ResourceManager;
 import topicfriend.client.database.TimeUtil;
-import topicfriend.client.database.User;
 import topicfriend.client.database.UserManager;
 import topicfriend.client.R;
+import topicfriend.netmessage.data.MessageInfo;
+import topicfriend.netmessage.data.UserInfo;
 
 
 import android.app.Activity;
@@ -22,6 +22,8 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +47,7 @@ public class ChatFragment extends Fragment{
 		// Inflate the layout for this fragment
 		return inflater.inflate(R.layout.fragment_chat, container, false);
 	}
-
+	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -92,18 +94,18 @@ public class ChatFragment extends Fragment{
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		
 		for (Channel channel : channelArray) {
-			ChatMessage lastMessage = channel.getLastMessage();
+			MessageInfo lastMessage = channel.getLastMessage();
 			if (lastMessage == null) continue;
 			
-			User user = userManager.getByID(channel.getParticipantID());
+			UserInfo user = userManager.getByID(channel.getParticipantID());
 			if (user == null) continue;
 			
-			Bitmap bitmap = ResourceManager.getInstance().getBitmapFromAsset(user.getIconName());
+			Bitmap bitmap = ResourceManager.getInstance().getBitmapFromAsset(user.getIcon());
 			
 			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("name", user.getNickname());
+			map.put("name", user.getName());
 			map.put("msg", lastMessage.getContent());
-			map.put("time", TimeUtil.convertTimestampToString(lastMessage.getTimestamp()));
+			map.put("time", TimeUtil.convertTimestampToString(lastMessage.getTimetamp().getTime()));
 			map.put("img", bitmap);
 			map.put(Consts.ParticipantID, channel.getParticipantID());
 			list.add(map);

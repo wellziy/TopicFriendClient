@@ -5,29 +5,42 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import topicfriend.netmessage.data.TopicInfo;
+
 public class TopicManager {
 
 	private int mTopicCounter = 0;
 	private int mOwnerID = Consts.InvalidID;
-	private Map<Integer, Topic> mTopicMap = new LinkedHashMap<Integer, Topic>();
+	private Map<Integer, TopicInfo> mTopicMap = new LinkedHashMap<Integer, TopicInfo>();
 	
 	public int getOwnerID() { return mOwnerID; }
 	
-	public TopicManager(int ownerID) {
+	public TopicManager() {
+		
+	}
+	
+	public void initWithUid(int ownerID) {
 		mOwnerID = ownerID;
 	}
 	
-	public Topic add(String title) {
-		Topic topic = new Topic(mTopicCounter++, title);
+	public void refreshData(ArrayList<TopicInfo> topicList) {
+		mTopicMap.clear();
+		for (TopicInfo topic : topicList) {
+			mTopicMap.put(topic.getID(), topic);
+		}
+	}
+	
+	public TopicInfo add(String title) {
+		TopicInfo topic = new TopicInfo(mTopicCounter++, title, "");
 		mTopicMap.put(topic.getID(), topic);
 		return topic;
 	}
 	
-	public Topic getByID(int id) {
+	public TopicInfo getByID(int id) {
 		return mTopicMap.get(id);
 	}
 	
-	public Topic removeByID(int id) {
+	public TopicInfo removeByID(int id) {
 		return mTopicMap.remove(id);
 	}
 	
@@ -35,9 +48,9 @@ public class TopicManager {
 		mTopicMap.clear();
 	}
 	
-	public List<Topic> getAll() {
-		List<Topic> list = new ArrayList<Topic>();
-		for (Topic topic : mTopicMap.values()) {
+	public List<TopicInfo> getAll() {
+		List<TopicInfo> list = new ArrayList<TopicInfo>();
+		for (TopicInfo topic : mTopicMap.values()) {
 			list.add(topic);
 		}
 		return list;

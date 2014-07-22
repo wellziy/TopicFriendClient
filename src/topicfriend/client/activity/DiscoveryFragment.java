@@ -8,12 +8,10 @@ import java.util.Map;
 import topicfriend.client.R;
 import topicfriend.client.database.AppController;
 import topicfriend.client.database.Channel;
-import topicfriend.client.database.ChatMessage;
 import topicfriend.client.database.Consts;
 import topicfriend.client.database.TimeUtil;
-import topicfriend.client.database.Topic;
 import topicfriend.client.database.TopicManager;
-import topicfriend.client.database.User;
+import topicfriend.netmessage.data.TopicInfo;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -64,7 +62,7 @@ public class DiscoveryFragment extends Fragment{
 				
 				Map<String, Object> itemData = (Map<String, Object>) mListView.getAdapter().getItem(position);
 				int topicID = (Integer) itemData.get(Consts.TopicID);
-				Topic topic = topicManager.getByID(topicID);
+				TopicInfo topic = topicManager.getByID(topicID);
 				if (topic != null) {
 					match(topic);
 				}
@@ -75,10 +73,10 @@ public class DiscoveryFragment extends Fragment{
 	
 	private void refresh() {
 		
-		List<Topic> topicArray = topicManager.getAll();
+		List<TopicInfo> topicArray = topicManager.getAll();
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		
-		for (Topic topic : topicArray) {
+		for (TopicInfo topic : topicArray) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("title", topic.getTitle());
 			map.put(Consts.TopicID, topic.getID());
@@ -92,7 +90,7 @@ public class DiscoveryFragment extends Fragment{
 		mListView.setAdapter(adapter);
 	}
 	
-	private void match(Topic topic) {
+	private void match(TopicInfo topic) {
 		System.out.println("match at topic "+topic.getTitle());
 	}
 	

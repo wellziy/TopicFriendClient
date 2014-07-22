@@ -5,8 +5,8 @@ import topicfriend.client.R.layout;
 import topicfriend.client.R.menu;
 import topicfriend.client.database.AppController;
 import topicfriend.client.database.Consts;
-import topicfriend.client.database.User;
 import topicfriend.client.database.UserManager;
+import topicfriend.netmessage.data.UserInfo;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -44,6 +44,7 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
+		AppActivityManager.getInstance().onActivityCreate(this);
 		
 		userManager = AppController.getInstance().getUserManager();
 		// get can edit
@@ -77,6 +78,7 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		super.onDestroy();
 		
 		this.afterPreferenceSceneDestroy();
+		AppActivityManager.getInstance().onActivityDestroy(this);
 	}
 
 	@Override
@@ -98,10 +100,10 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		
 		//TODO: download information from server
 
-		User user = userManager.getByID(mUserID);
+		UserInfo user = userManager.getByID(mUserID);
 		SharedPreferences sharedPrefs = getPreferenceManager().getSharedPreferences();
 		Editor editor = sharedPrefs.edit();
-		editor.putString("edit_nickname", user.getNickname());
+		editor.putString("edit_nickname", user.getName());
 		editor.putString("list_sex", ""+0);
 		editor.putString("edit_signature", user.getSignature());			
 		editor.commit();
@@ -110,9 +112,9 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	
 	private void afterPreferenceSceneCreate() {
 		// initialize Image Select Preference
-		final User user = userManager.getByID(mUserID);
+		final UserInfo user = userManager.getByID(mUserID);
 		selectImagePreference.setActivity(this);
-		selectImagePreference.changeImage(user.getIconName());
+		selectImagePreference.changeImage(user.getIcon());
 		
 		bindPreferenceSummaryToValue(listSexPreference);
 		bindPreferenceSummaryToValue(editTextNicknamePreference);

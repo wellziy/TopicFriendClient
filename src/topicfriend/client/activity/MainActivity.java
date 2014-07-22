@@ -1,17 +1,26 @@
 package topicfriend.client.activity;
 
 import topicfriend.client.database.AppController;
+import topicfriend.client.database.Channel;
+import topicfriend.client.database.ChannelManager;
 import topicfriend.client.database.Consts;
 import topicfriend.client.database.ResourceManager;
+import topicfriend.client.network.NetworkManager;
+import topicfriend.client.netwrapper.NetMessageHandler;
 import topicfriend.client.R;
+import topicfriend.netmessage.NetMessage;
+import topicfriend.netmessage.NetMessageChatFriend;
+import topicfriend.netmessage.NetMessageID;
 
 
 import android.os.Bundle;
+import android.R.interpolator;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.util.DisplayMetrics;
 import android.view.Menu;
@@ -22,10 +31,12 @@ public class MainActivity extends Activity {
 	private DiscoveryFragment discoveryFragment;
 	private ChatFragment chatFragment;
 	private FriendFragment friendFragment;
+	private NetworkManager networkManager;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		AppActivityManager.getInstance().onActivityCreate(this);
 		setContentView(R.layout.activity_main);
 		
 		// 设置ActionBar的显示模式
@@ -51,15 +62,23 @@ public class MainActivity extends Activity {
         		.setTabListener(new MyTabsListener(friendFragment)));
         
         
-        // init data and current user
-        AppController.getInstance().initWithUid(999);
-        
         // init resource manager
         DisplayMetrics metric = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metric);
 		ResourceManager.ScreenWidth = (int) metric.widthPixels;
 		ResourceManager.ScreenHeight = (int) metric.heightPixels;
 		
+		networkManager = AppController.getInstance().getNetworkManager();
+		this.initModel();
+		
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		
+		AppActivityManager.getInstance().onActivityDestroy(this);
 	}
 	
 	@Override
@@ -68,11 +87,6 @@ public class MainActivity extends Activity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-	
-	
-
-
-
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -89,11 +103,21 @@ public class MainActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
-
-
-
-
-
+	private void initModel() {
+		networkManager.setMessageHandler(NetMessageID.CHAT_FRIEND, new NetMessageHandler() {
+			@Override
+			public void handleMessage(int connection, NetMessage msg) {
+				NetMessageChatFriend chatMsg = (NetMessageChatFriend) msg;
+				ChannelManager channelManager = AppController.getInstance().getChannelManager();
+				Channel channel = channelManager.getByID(chatMsg.getFriendID());
+				channel.push(chatMsg.getFriendID(), chatMsg.getContent());
+				if (channelManager.getChatFriendListener() != null) {
+					channelManager.getChatFriendListener().onChatFriend(chatMsg);
+				}
+			}
+		});
+	}
+	
 	// 实例化 tabs 的监听类   
 	class MyTabsListener implements ActionBar.TabListener {  
 	    public Fragment fragment;  
@@ -117,4 +141,18 @@ public class MainActivity extends Activity {
 	        ft.remove(fragment);  
 	    }  
 	}
+
+	// 返回按钮，结束程序
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+		super.onBackPressed();
+		
+		// finished all activity including LoginActivity, 
+		// which is the enter and exit entances of this application
+		AppActivityManager.purgeInstance();
+	}
+	
+	
+	
 }

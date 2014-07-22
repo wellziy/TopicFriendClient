@@ -1,6 +1,22 @@
 package topicfriend.client.activity;
 
 import topicfriend.client.R;
+import topicfriend.client.database.AppController;
+import topicfriend.client.database.Channel;
+import topicfriend.client.database.ChannelManager;
+import topicfriend.client.database.ResourceManager;
+import topicfriend.client.network.NetworkManager;
+import topicfriend.client.netwrapper.NetMessageHandler;
+import topicfriend.client.netwrapper.NetMessageReceiver;
+import topicfriend.netmessage.NetMessage;
+import topicfriend.netmessage.NetMessageChatFriend;
+import topicfriend.netmessage.NetMessageError;
+import topicfriend.netmessage.NetMessageID;
+import topicfriend.netmessage.NetMessageLogin;
+import topicfriend.netmessage.NetMessageLoginSucceed;
+import topicfriend.netmessage.NetMessageRegister;
+import topicfriend.netmessage.data.UserInfo;
+import topicfriend.network.Network;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -8,16 +24,20 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Activity which displays a login screen to the user, offering registration as
@@ -36,11 +56,6 @@ public class LoginActivity extends Activity {
 	 */
 	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
 
-	/**
-	 * Keep track of the login task to ensure we can cancel it if requested.
-	 */
-	private UserLoginTask mAuthTask = null;
-
 	// Values for email and password at the time of the login attempt.
 	private String mEmail;
 	private String mPassword;
@@ -51,11 +66,17 @@ public class LoginActivity extends Activity {
 	private View mLoginFormView;
 	private View mLoginStatusView;
 	private TextView mLoginStatusMessageView;
+	
+	// Model references
+	private NetworkManager mNetManager = null;
+	private Handler mHandler = new Handler();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		// create AppActivityManager to manage all activities
+		AppActivityManager.getInstance().onActivityCreate(this);
+		this.initApplication();
 		setContentView(R.layout.activity_login);
 
 		// Set up the login form.
@@ -70,7 +91,7 @@ public class LoginActivity extends Activity {
 					public boolean onEditorAction(TextView textView, int id,
 							KeyEvent keyEvent) {
 						if (id == R.id.login || id == EditorInfo.IME_NULL) {
-							attemptLogin();
+							attemptLogin(false);
 							return true;
 						}
 						return false;
@@ -85,11 +106,32 @@ public class LoginActivity extends Activity {
 				new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
-						attemptLogin();
+						attemptLogin(false);
+					}
+				});
+		findViewById(R.id.register_button).setOnClickListener(
+				new View.OnClickListener() {
+					@Override
+					public void onClick(View arg0) {
+						attemptLogin(true);
 					}
 				});
 	}
-
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+		AppActivityManager.getInstance().onActivityDestroy(this);
+		AppActivityManager.purgeInstance();
+		AppController.log("Application ended!");
+		
+		// destroyed this application
+		AppController.getInstance().destroyNetwork();
+		AppController.purgeInstance();
+		NetMessageReceiver.getInstance().purgeInstance();
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
@@ -102,11 +144,8 @@ public class LoginActivity extends Activity {
 	 * If there are form errors (invalid email, missing fields, etc.), the
 	 * errors are presented and no actual login attempt is made.
 	 */
-	public void attemptLogin() {
-		if (mAuthTask != null) {
-			return;
-		}
-
+	public void attemptLogin(boolean isRegister) {
+		
 		// Reset errors.
 		mEmailView.setError(null);
 		mPasswordView.setError(null);
@@ -129,17 +168,6 @@ public class LoginActivity extends Activity {
 			cancel = true;
 		}
 
-		// Check for a valid email address.
-//		if (TextUtils.isEmpty(mEmail)) {
-//			mEmailView.setError(getString(R.string.error_field_required));
-//			focusView = mEmailView;
-//			cancel = true;
-//		} else if (!mEmail.contains("@")) {
-//			mEmailView.setError(getString(R.string.error_invalid_email));
-//			focusView = mEmailView;
-//			cancel = true;
-//		}
-		
 		// Check user name valid
 		if (TextUtils.isEmpty(mEmail)) {
 			mEmailView.setError(getString(R.string.error_field_required));
@@ -157,11 +185,70 @@ public class LoginActivity extends Activity {
 			// perform the user login attempt.
 			mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
 			showProgress(true);
-			mAuthTask = new UserLoginTask();
-			mAuthTask.execute((Void) null);
+			doLogin(isRegister);
+			
 		}
 	}
 
+	
+	
+	private void doLogin(boolean isRegister) {
+		if (isRegister) {
+			NetMessageRegister msgRegister = new NetMessageRegister(mEmail, mPassword, UserInfo.SEX_MALE);
+			mNetManager.sendDataOne(msgRegister);
+		}
+		else {
+			NetMessageLogin msgLogin = new NetMessageLogin(mEmail, mPassword);
+			mNetManager.sendDataOne(msgLogin);
+		}
+		mNetManager.setMessageHandler(NetMessageID.LOGIN_SUCCEED, new NetMessageHandler() {
+			@Override
+			public void handleMessage(int connection, NetMessage msg) {
+				NetMessageLoginSucceed loginMsg = (NetMessageLoginSucceed) msg;
+				// refresh all data
+				AppController.getInstance().initWithUid(loginMsg.getMyInfo().getID());
+				AppController.getInstance().getTopicManager().refreshData(loginMsg.getTopicList());
+				AppController.getInstance().getUserManager().refreshData(loginMsg.getFriendInfoList());
+				AppController.getInstance().getUserManager().add(loginMsg.getMyInfo());
+				AppController.getInstance().getChannelManager().refreshData(loginMsg.getUnreadMessageList());
+
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						startActivity(new Intent(getApplicationContext(), MainActivity.class));
+					}
+				});
+			}
+		});
+	}
+	
+	private void initApplication() {
+
+		// create AppController and init network and connect to server
+		AppController.getInstance().initNetwork();
+		AppController.log("Application started!");
+		// create NetReceiver
+		NetMessageReceiver.getInstance();
+		
+		
+		mNetManager = AppController.getInstance().getNetworkManager();
+		mNetManager.setMessageHandler(NetMessageID.ERROR, new NetMessageHandler() {
+			@Override
+			public void handleMessage(int connection, NetMessage msg) {
+				final String errorStr = ((NetMessageError) msg).getErrorStr();
+				AppController.log("[network error]: "+errorStr);
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(getApplicationContext(), errorStr, Toast.LENGTH_SHORT).show();
+						showProgress(false);
+					}
+				});
+			}
+		});
+		mNetManager.connectToServer();
+	}
+	
 	/**
 	 * Shows the progress UI and hides the login form.
 	 */
@@ -203,56 +290,4 @@ public class LoginActivity extends Activity {
 		}
 	}
 
-	
-	
-	/**
-	 * Represents an asynchronous login/registration task used to authenticate
-	 * the user.
-	 */
-	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-		@Override
-		protected Boolean doInBackground(Void... params) {
-			// TODO: attempt authentication against a network service.
-
-			try {
-				// Simulate network access.
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				return false;
-			}
-
-			for (String credential : DUMMY_CREDENTIALS) {
-				String[] pieces = credential.split(":");
-				if (pieces[0].equals(mEmail)) {
-					// Account exists, return true if the password matches.
-					return pieces[1].equals(mPassword);
-				}
-			}
-
-			// TODO: register the new account here.
-			return true;
-		}
-
-		@Override
-		protected void onPostExecute(final Boolean success) {
-			mAuthTask = null;
-			showProgress(false);
-
-			if (success) {
-				// TODO: authentication success
-				startActivity(new Intent(getApplicationContext(), MainActivity.class));
-				finish();
-			} else {
-				mPasswordView
-						.setError(getString(R.string.error_incorrect_password));
-				mPasswordView.requestFocus();
-			}
-		}
-
-		@Override
-		protected void onCancelled() {
-			mAuthTask = null;
-			showProgress(false);
-		}
-	}
 }

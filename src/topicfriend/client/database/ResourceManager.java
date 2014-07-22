@@ -16,10 +16,17 @@ public class ResourceManager {
 	
 	private Context mContext = null;
 	private Map<String, Bitmap> mBitmapCache = new HashMap<String, Bitmap>();
-	private static ResourceManager sResourceManager = new ResourceManager();
+	private static ResourceManager sResourceManager = null;
 	
 	public static ResourceManager getInstance() {
+		if (sResourceManager == null) {
+			sResourceManager = new ResourceManager();
+		}
 		return sResourceManager;
+	}
+	
+	public static void purgeInstance() {
+		sResourceManager = null;
 	}
 	
 	public void init(Context context) {

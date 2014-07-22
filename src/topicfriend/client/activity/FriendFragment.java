@@ -9,9 +9,9 @@ import topicfriend.client.database.AppController;
 import topicfriend.client.database.ChannelManager;
 import topicfriend.client.database.Consts;
 import topicfriend.client.database.ResourceManager;
-import topicfriend.client.database.User;
 import topicfriend.client.database.UserManager;
 import topicfriend.client.R;
+import topicfriend.netmessage.data.UserInfo;
 
 
 import android.app.Fragment;
@@ -88,15 +88,15 @@ public class FriendFragment extends Fragment{
 	}
 
 	public void refresh() {
-		List<User> userArray = userManager.getAllFriends();
+		List<UserInfo> userArray = userManager.getAllFriends();
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		
-		for (User friend : userArray) {
+		for (UserInfo friend : userArray) {
 			
 			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("name", friend.getNickname());
+			map.put("name", friend.getName());
 			map.put("msg", friend.getSignature());
-			map.put("img", ResourceManager.getInstance().getBitmapFromAsset(friend.getIconName()));
+			map.put("img", ResourceManager.getInstance().getBitmapFromAsset(friend.getIcon()));
 			map.put(Consts.UserID, friend.getID());
 			list.add(map);
 		}

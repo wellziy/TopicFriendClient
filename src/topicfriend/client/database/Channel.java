@@ -1,30 +1,39 @@
 package topicfriend.client.database;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import topicfriend.netmessage.data.MessageInfo;
+
 public class Channel {
 	
-	int mParticipantID;
-	private List<ChatMessage> mMsgArray = new ArrayList<ChatMessage>();
+	int mOwnerID = Consts.InvalidID;
+	int mParticipantID = Consts.InvalidID;
+	private List<MessageInfo> mMsgArray = new ArrayList<MessageInfo>();
 	
 	// constructors
-	public Channel(int participantID) {
+	public Channel(int ownerID, int participantID) {
+		mOwnerID = ownerID;
 		mParticipantID = participantID;
 	}
 	
 	// Message Management
-	public List<ChatMessage> getAll() {
+	public List<MessageInfo> getAll() {
 		return mMsgArray;
 	}
 	
-	public ChatMessage add(int senderID, String msg, long timestamp) {
-		ChatMessage chatMsg = new ChatMessage(senderID, timestamp, msg);
+	public MessageInfo add(int senderID, String msg, long timestamp) {
+		int targetID = mParticipantID;
+		if (senderID == mParticipantID) {
+			targetID = mOwnerID;
+		}
+		MessageInfo chatMsg = new MessageInfo(senderID, targetID, new Timestamp(timestamp), msg);
 		mMsgArray.add(chatMsg);
 		return chatMsg;
 	}
 	
-	public ChatMessage push(int senderID, String msg) {
+	public MessageInfo push(int senderID, String msg) {
 		return add(senderID, msg, TimeUtil.getCurrentTimestamp());
 	}
 	
@@ -33,7 +42,7 @@ public class Channel {
 		return mParticipantID; 
 	}
 	
-	public ChatMessage getLastMessage() {
+	public MessageInfo getLastMessage() {
 		if (mMsgArray.size() == 0) {
 			return null;
 		}

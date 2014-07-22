@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import topicfriend.netmessage.data.UserInfo;
+
 /*
  * 
 ¨X¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨j¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨j¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨j¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨[
@@ -45,20 +47,30 @@ import java.util.Map;
 
 public class UserManager {
 
-	public int mOwnerID;
+	public int mOwnerID = Consts.InvalidID;
 	
-	public UserManager(int ownerID) {
+	public UserManager() {
+	}
+	
+	public void initWithUid(int ownerID) {
 		mOwnerID = ownerID;
 	}
 	
-	// userMap, use uid as key and User's instance as value
-	private Map<Integer, User> userMap = new LinkedHashMap<Integer, User>();
+	public void refreshData(ArrayList<UserInfo> userList) {
+		userMap.clear();
+		for (UserInfo user : userList) {
+			userMap.put(user.getID(), user);
+		}
+	}
 	
-	public User getByID(int id) {
+	// userMap, use uid as key and UserInfo's instance as value
+	private Map<Integer, UserInfo> userMap = new LinkedHashMap<Integer, UserInfo>();
+	
+	public UserInfo getByID(int id) {
 		return userMap.get(id);
 	}
 	
-	public void add(User user) {
+	public void add(UserInfo user) {
 		if ( getByID(user.getID()) != null ) {
 			System.out.println("the user has been added!!");
 		}
@@ -71,18 +83,18 @@ public class UserManager {
 		userMap.remove(id);
 	}
 	
-	public List<User> getAll() {
-		List<User> list = new ArrayList<User>();
-		for (User user : userMap.values()) {
+	public List<UserInfo> getAll() {
+		List<UserInfo> list = new ArrayList<UserInfo>();
+		for (UserInfo user : userMap.values()) {
 			list.add(user);
 		}
 		return list;
 	}
 	
-	public List<User> getAllFriends() {
-		List<User> list = new ArrayList<User>();
-		for (User user : userMap.values()) {
-			if (user.isFriend())
+	public List<UserInfo> getAllFriends() {
+		List<UserInfo> list = new ArrayList<UserInfo>();
+		for (UserInfo user : userMap.values()) {
+			if (user.getID() != mOwnerID)
 				list.add(user);
 		}
 		return list;
