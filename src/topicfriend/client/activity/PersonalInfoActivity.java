@@ -3,9 +3,10 @@ package topicfriend.client.activity;
 import topicfriend.client.R;
 import topicfriend.client.R.layout;
 import topicfriend.client.R.menu;
-import topicfriend.client.database.AppController;
-import topicfriend.client.database.Consts;
-import topicfriend.client.database.UserManager;
+import topicfriend.client.appcontroller.AppActivityManager;
+import topicfriend.client.appcontroller.AppController;
+import topicfriend.client.appcontroller.AccountManager;
+import topicfriend.client.base.Consts;
 import topicfriend.netmessage.data.UserInfo;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -32,7 +33,7 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 
 	private boolean mCanEdit = false;
 	private int mUserID = Consts.InvalidID;
-	private UserManager userManager = null;
+	private AccountManager userManager = null;
 	
 	private ListPreference listSexPreference = null;
 	private EditTextPreference editTextNicknamePreference = null;
@@ -46,7 +47,7 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		super.onCreate(savedInstanceState);
 		AppActivityManager.getInstance().onActivityCreate(this);
 		
-		userManager = AppController.getInstance().getUserManager();
+		userManager = AppController.getInstance().getAccountManager();
 		// get can edit
 		mUserID = getIntent().getIntExtra(Consts.UserID, Consts.InvalidID);
 		if (mUserID == AppController.getInstance().getOwnerID()) {
@@ -126,6 +127,8 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 			
 			buttonChatPreference.setTitle("");
 			buttonChatPreference.setEnabled(false);
+			
+			
 		}
 		else {
 			listSexPreference.setSelectable(false);

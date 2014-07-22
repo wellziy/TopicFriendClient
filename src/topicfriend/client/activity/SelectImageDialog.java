@@ -1,7 +1,7 @@
 package topicfriend.client.activity;
 
 import topicfriend.client.R;
-import topicfriend.client.database.ResourceManager;
+import topicfriend.client.appcontroller.ResourceManager;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;

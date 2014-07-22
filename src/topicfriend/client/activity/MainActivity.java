@@ -1,11 +1,12 @@
 package topicfriend.client.activity;
 
-import topicfriend.client.database.AppController;
-import topicfriend.client.database.Channel;
-import topicfriend.client.database.ChannelManager;
-import topicfriend.client.database.Consts;
-import topicfriend.client.database.ResourceManager;
-import topicfriend.client.network.NetworkManager;
+import topicfriend.client.appcontroller.AppActivityManager;
+import topicfriend.client.appcontroller.AppController;
+import topicfriend.client.appcontroller.FriendChatManager;
+import topicfriend.client.appcontroller.NetworkManager;
+import topicfriend.client.appcontroller.ResourceManager;
+import topicfriend.client.base.FriendChat;
+import topicfriend.client.base.Consts;
 import topicfriend.client.netwrapper.NetMessageHandler;
 import topicfriend.client.R;
 import topicfriend.netmessage.NetMessage;
@@ -108,8 +109,8 @@ public class MainActivity extends Activity {
 			@Override
 			public void handleMessage(int connection, NetMessage msg) {
 				NetMessageChatFriend chatMsg = (NetMessageChatFriend) msg;
-				ChannelManager channelManager = AppController.getInstance().getChannelManager();
-				Channel channel = channelManager.getByID(chatMsg.getFriendID());
+				FriendChatManager channelManager = AppController.getInstance().getFriendChatManager();
+				FriendChat channel = channelManager.getByID(chatMsg.getFriendID());
 				channel.push(chatMsg.getFriendID(), chatMsg.getContent());
 				if (channelManager.getChatFriendListener() != null) {
 					channelManager.getChatFriendListener().onChatFriend(chatMsg);

@@ -1,8 +1,8 @@
-bin/
-gen/
-.git/
-.svn/
-.settings/
+bin
+gen
+.git
+.svn
+.settings
 .project
 .classpath
 project.properties

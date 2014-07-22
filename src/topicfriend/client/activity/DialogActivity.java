@@ -5,14 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import topicfriend.client.database.AppController;
-import topicfriend.client.database.Channel;
-import topicfriend.client.database.ChannelManager;
-import topicfriend.client.database.Consts;
-import topicfriend.client.database.OnChatFriendListener;
-import topicfriend.client.database.ResourceManager;
-import topicfriend.client.database.UserManager;
-import topicfriend.client.network.NetworkManager;
+import topicfriend.client.appcontroller.AppActivityManager;
+import topicfriend.client.appcontroller.AppController;
+import topicfriend.client.appcontroller.FriendChatManager;
+import topicfriend.client.appcontroller.NetworkManager;
+import topicfriend.client.appcontroller.ResourceManager;
+import topicfriend.client.appcontroller.AccountManager;
+import topicfriend.client.base.FriendChat;
+import topicfriend.client.base.Consts;
+import topicfriend.client.base.OnChatFriendListener;
 import topicfriend.client.R;
 import topicfriend.netmessage.NetMessageChatFriend;
 import topicfriend.netmessage.data.MessageInfo;
@@ -48,9 +49,9 @@ public class DialogActivity extends Activity implements OnChatFriendListener{
 	private EditText sendEditText;
 	
 	// Channel
-	private Channel channel;
-	private ChannelManager channelManager;
-	private UserManager userManager;
+	private FriendChat channel;
+	private FriendChatManager channelManager;
+	private AccountManager userManager;
 	private NetworkManager networkManager;
 	private Handler handler = new Handler();
 	
@@ -68,8 +69,8 @@ public class DialogActivity extends Activity implements OnChatFriendListener{
 		}
 		
 		// initialize managers
-		channelManager = AppController.getInstance().getChannelManager();
-		userManager = AppController.getInstance().getUserManager();
+		channelManager = AppController.getInstance().getFriendChatManager();
+		userManager = AppController.getInstance().getAccountManager();
 		networkManager = AppController.getInstance().getNetworkManager();
 		
 		// get or create a channel with the participant
