@@ -16,10 +16,10 @@ public class NetworkManager implements BadConnectionHandler
 {
 	private int mConnection = Network.NULL_CONNECTION;
 	private ArrayList<ConnectionListener> mConnectionListener=new ArrayList<ConnectionListener>();
-	private Thread mConnectThread = new Thread()
+	private Thread mConnectThread = new Thread(new Runnable()
 	{
 		@Override
-		public void run()
+		public void run() 
 		{
 			String hostIP="222.200.185.43";
 			int port=55555;
@@ -28,7 +28,6 @@ public class NetworkManager implements BadConnectionHandler
 			try 
 			{
 				connection = Network.connectHostPort(hostIP, port, 1000);
-				return;
 			}
 			catch (IOException e)
 			{
@@ -46,7 +45,7 @@ public class NetworkManager implements BadConnectionHandler
 				}
 			});
 		}
-	};
+	});
 	
 	public void initNetwork() 
 	{

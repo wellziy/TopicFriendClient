@@ -2,9 +2,8 @@ package topicfriend.client.appcontroller;
 
 import java.util.ArrayList;
 
-import android.os.Handler;
-
 import topicfriend.client.base.LoginListener;
+import topicfriend.client.base.UserInfoUpdateListener;
 import topicfriend.client.netwrapper.NetMessageHandler;
 import topicfriend.client.netwrapper.NetMessageReceiver;
 import topicfriend.netmessage.NetMessage;
@@ -13,14 +12,20 @@ import topicfriend.netmessage.NetMessageID;
 import topicfriend.netmessage.NetMessageLogin;
 import topicfriend.netmessage.NetMessageLoginSucceed;
 import topicfriend.netmessage.NetMessageRegister;
+import topicfriend.netmessage.NetMessageUpdateUserInfo;
+import topicfriend.netmessage.NetMessageUpdateUserInfoSucceed;
 import topicfriend.netmessage.data.UserInfo;
+import android.os.Handler;
 
 public class AccountManager implements NetMessageHandler
 {
 	private UserInfo mLoginUserInfo=null;
 	private ArrayList<LoginListener> mLoginListener=new ArrayList<LoginListener>();
+	private ArrayList<UserInfoUpdateListener> mUserInfoUpdateListener=new ArrayList<UserInfoUpdateListener>();
+	
 	private String mLastUserName="";
 	private String mLastPassword="";
+	private UserInfo mNeedUpdateInfo=null;
 	
 	///////////////////////////////
 	//public
@@ -42,6 +47,22 @@ public class AccountManager implements NetMessageHandler
 	public void clearLoginListener()
 	{
 		mLoginListener.clear();
+	}
+	
+	//user info update listener
+	public void addUserInfoUpdateListener(UserInfoUpdateListener listener)
+	{
+		mUserInfoUpdateListener.add(listener);
+	}
+	
+	public void removeUserInfoUpdateListener(UserInfoUpdateListener listener)
+	{
+		mUserInfoUpdateListener.remove(listener);
+	}
+	
+	public void clearUserInfoUpdateListener()
+	{
+		mUserInfoUpdateListener.clear();
 	}
 	
 	public void login(String userName,String password)
@@ -111,9 +132,13 @@ public class AccountManager implements NetMessageHandler
 		return mLoginUserInfo;
 	}
 	
-	public void setUserInfo(UserInfo userInfo)
+	public void reqUpdateUserInfo(UserInfo newInfo)
 	{
-		mLoginUserInfo=userInfo;
+		mNeedUpdateInfo=newInfo;
+		registerMessagedHandler();
+		
+		NetMessageUpdateUserInfo msgUpdateUserInfo=new NetMessageUpdateUserInfo(newInfo);
+		AppController.getInstance().getNetworkManager().sendDataOne(msgUpdateUserInfo);
 	}
 
 	@Override
@@ -139,8 +164,13 @@ public class AccountManager implements NetMessageHandler
 		case NetMessageID.LOGIN_SUCCEED:
 			handleMessageLoginSucceed(connection, msg);
 			break;
+			
 		case NetMessageID.ERROR:
 			handleMessageError(connection, msg);
+			break;
+			
+		case NetMessageID.UPDATE_USER_INFO_SUCCEED:
+			handleMessageUpdateUserInfoSucceed(connection, msg);
 			break;
 		}
 	}
@@ -178,13 +208,46 @@ public class AccountManager implements NetMessageHandler
 	{
 		//remove message handler not to handle other message
 		removeMessageHandler();
-		
 		NetMessageError msgError=(NetMessageError)msg;
-		ArrayList<LoginListener> copyListener=new ArrayList<LoginListener>(mLoginListener);
+		
+		if(mNeedUpdateInfo!=null)
+		{
+			//update user info failed
+			ArrayList<UserInfoUpdateListener> copyListener=new ArrayList<UserInfoUpdateListener>(mUserInfoUpdateListener);
+			for(int i=0;i<copyListener.size();i++)
+			{
+				UserInfoUpdateListener listener=copyListener.get(i);
+				listener.onUserInfoUpdateFailed(msgError);
+			}
+			mNeedUpdateInfo=null;
+		}
+		else
+		{
+			//login failed
+			ArrayList<LoginListener> copyListener=new ArrayList<LoginListener>(mLoginListener);
+			for(int i=0;i<copyListener.size();i++)
+			{
+				LoginListener listener=copyListener.get(i);
+				listener.onLoginError(msgError);
+			}
+		}
+	}
+	
+	private void handleMessageUpdateUserInfoSucceed(int connection,NetMessage msg)
+	{
+		//remove message handler not to handle other message
+		removeMessageHandler();
+		NetMessageUpdateUserInfoSucceed msgSucceed=(NetMessageUpdateUserInfoSucceed)msg;
+		
+		UserInfo oldInfo=mLoginUserInfo;
+		mLoginUserInfo=mNeedUpdateInfo;
+		mNeedUpdateInfo=null;
+		
+		ArrayList<UserInfoUpdateListener> copyListener=new ArrayList<UserInfoUpdateListener>(mUserInfoUpdateListener);
 		for(int i=0;i<copyListener.size();i++)
 		{
-			LoginListener listener=copyListener.get(i);
-			listener.onLoginError(msgError);
+			UserInfoUpdateListener listener=copyListener.get(i);
+			listener.onUserInfoUpdated(oldInfo, mLoginUserInfo);
 		}
 	}
 	
@@ -192,6 +255,7 @@ public class AccountManager implements NetMessageHandler
 	{
 		NetMessageReceiver.getInstance().setMessageHandler(NetMessageID.LOGIN_SUCCEED,this);
 		NetMessageReceiver.getInstance().setMessageHandler(NetMessageID.ERROR, this);
+		NetMessageReceiver.getInstance().setMessageHandler(NetMessageID.UPDATE_USER_INFO_SUCCEED, this);
 	}
 	
 	private void removeMessageHandler()

@@ -11,6 +11,7 @@ import topicfriend.client.base.LoginListener;
 import topicfriend.client.netwrapper.NetMessageReceiver;
 import topicfriend.netmessage.NetMessageError;
 import topicfriend.netmessage.NetMessageLoginSucceed;
+import android.R.attr;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -78,7 +79,7 @@ public class LoginActivity extends Activity
 			{
 				if (id == R.id.login || id == EditorInfo.IME_NULL) 
 				{
-					attemptLogin(false);
+					validateInput();
 					return true;
 				}
 				return false;
@@ -94,7 +95,10 @@ public class LoginActivity extends Activity
 			@Override
 			public void onClick(View view) 
 			{
-				attemptLogin(false);
+				if(validateInput())
+				{
+					connectAndLogin(false);
+				}
 			}
 		});
 		findViewById(R.id.register_button).setOnClickListener(new View.OnClickListener()
@@ -102,7 +106,10 @@ public class LoginActivity extends Activity
 			@Override
 			public void onClick(View arg0) 
 			{
-				attemptLogin(true);
+				if(validateInput())
+				{
+					connectAndLogin(true);
+				}
 			}
 		});
 	}
@@ -131,13 +138,20 @@ public class LoginActivity extends Activity
 		getMenuInflater().inflate(R.menu.login, menu);
 		return true;
 	}
-
+	
+	@Override
+	protected void onStop()
+	{
+		showProgress(false);
+		super.onStop();
+	}
+	
 	/**
 	 * Attempts to sign in or register the account specified by the login form.
 	 * If there are form errors (invalid email, missing fields, etc.), the
 	 * errors are presented and no actual login attempt is made.
 	 */
-	public void attemptLogin(final boolean isRegister) 
+	public boolean validateInput() 
 	{
 		
 		// Reset errors.
@@ -179,44 +193,51 @@ public class LoginActivity extends Activity
 			// There was an error; don't attempt login and focus the first
 			// form field with an error.
 			focusView.requestFocus();
+			return false;
 		}
 		else 
 		{
-			// Show a progress spinner, and kick off a background task to
-			// perform the user login attempt.
-			mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
-			showProgress(true);
-			
-			final NetworkManager netMan=AppController.getInstance().getNetworkManager();
-			if(!netMan.isConnected())
-			{
-				ConnectionListener listener=new ConnectionListener()
-				{
-					@Override
-					public void onConnectionLost() 
-					{
-						netMan.removeConnectionListener(this);
-					}
-					
-					@Override
-					public void onConnectSucceed() 
-					{
-						netMan.removeConnectionListener(this);
-						doLogin(isRegister);
-					}
-					
-					@Override
-					public void onConnectFailed()
-					{
-						netMan.removeConnectionListener(this);
-						Toast.makeText(LoginActivity.this, "can not connect to server", Toast.LENGTH_LONG).show();
-					}
-				};
-				netMan.addConnectionListener(listener);
-			}
+			return true;
 		}
 	}
 
+	private void connectAndLogin(final boolean isRegister)
+	{
+		// Show a progress spinner, and kick off a background task to
+		// perform the user login attempt.
+		mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
+		showProgress(true);
+		
+		final NetworkManager netMan=AppController.getInstance().getNetworkManager();
+		if(!netMan.isConnected())
+		{
+			ConnectionListener listener=new ConnectionListener()
+			{
+				@Override
+				public void onConnectionLost() 
+				{
+					netMan.removeConnectionListener(this);
+				}
+				
+				@Override
+				public void onConnectSucceed() 
+				{
+					netMan.removeConnectionListener(this);
+					doLogin(isRegister);
+				}
+				
+				@Override
+				public void onConnectFailed()
+				{
+					showProgress(false);
+					netMan.removeConnectionListener(this);
+					Toast.makeText(LoginActivity.this, "can not connect to server", Toast.LENGTH_LONG).show();
+				}
+			};
+			netMan.addConnectionListener(listener);
+			netMan.connectToServer();
+		}
+	}
 	
 	//register or login
 	private void doLogin(boolean isRegister)
@@ -227,7 +248,6 @@ public class LoginActivity extends Activity
 			@Override
 			public void onLoginSucceed(NetMessageLoginSucceed msgLoginSucceed)
 			{
-				showProgress(false);
 				accountMan.removeLoginListener(this);
 				startActivity(new Intent(getApplicationContext(), MainActivity.class));
 			}
@@ -235,7 +255,6 @@ public class LoginActivity extends Activity
 			@Override
 			public void onLoginError(NetMessageError msgError)
 			{
-				showProgress(false);
 				accountMan.removeLoginListener(this);
 				Toast.makeText(getApplicationContext(), msgError.getErrorStr(), Toast.LENGTH_LONG).show();
 			}

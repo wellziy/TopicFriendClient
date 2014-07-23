@@ -55,7 +55,7 @@ public class NetMessageReceiver
 			Entry<Integer, NetMessageHandler> next = iterator.next();
 			if(next.getValue()==handler)
 			{
-				m_messageHandlerMap.remove(next.getKey());
+				iterator.remove();
 			}
 		}
 	}
