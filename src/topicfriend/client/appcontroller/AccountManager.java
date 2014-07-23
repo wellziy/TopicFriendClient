@@ -198,6 +198,10 @@ public class AccountManager implements NetMessageHandler
 		friendChatMan.addNewMessageInfoList(msgLoginSucceed.getUnreadMessageList());
 		friendChatMan.registerMessageHandler();
 		
+		//topic chat manager
+		TopicChatManager topicChatMan=AppController.getInstance().getTopicChatManager();
+		topicChatMan.registerMessageHandler();
+		
 		ArrayList<LoginListener> copyListener=new ArrayList<LoginListener>(mLoginListener);
 		for(int i=0;i<copyListener.size();i++)
 		{

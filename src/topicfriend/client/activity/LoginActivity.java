@@ -237,6 +237,10 @@ public class LoginActivity extends Activity
 			netMan.addConnectionListener(listener);
 			netMan.connectToServer();
 		}
+		else
+		{
+			doLogin(isRegister);
+		}
 	}
 	
 	//register or login

@@ -21,8 +21,6 @@ public class AppController
 	
 	private AppController()
 	{
-		mFriendChatManager.init(mAccountManager);
-		mTopicChatManager.init(mAccountManager);
 	}
 	
 	// Singleton
@@ -70,6 +68,7 @@ public class AppController
 		return mNetManager; 
 	}
 	
+	//TODO: move resource out of application
 	public ResourceManager getResourceManager()
 	{
 		return mResourceManager;

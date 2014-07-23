@@ -19,16 +19,10 @@ import android.os.Handler;
 public class FriendChatManager implements NetMessageHandler
 {
 	private HashMap<Integer, FriendChat> mFriendChatMap = new HashMap<Integer, FriendChat>();
-	private AccountManager mAccountMan=null;
 	private ArrayList<FriendChatListener> mFriendChatListener=new ArrayList<FriendChatListener>();
 	
 	/////////////////////
 	//public
-	public void init(AccountManager accountMan)
-	{
-		mAccountMan=accountMan;
-	}
-	
 	public void markFriendChatMessageRead(int fid)
 	{
 		FriendChat fc=mFriendChatMap.get(fid);
@@ -40,7 +34,9 @@ public class FriendChatManager implements NetMessageHandler
 	
 	public void addMessage(MessageInfo msgInfo,boolean hasRead)
 	{
-		UserInfo loginUser=mAccountMan.getLoginUserInfo();
+		AccountManager accountMan=AppController.getInstance().getAccountManager();
+		
+		UserInfo loginUser=accountMan.getLoginUserInfo();
 		assert(loginUser!=null);
 		
 		int friendID=(msgInfo.getSenderID()==loginUser.getID()?
@@ -50,7 +46,9 @@ public class FriendChatManager implements NetMessageHandler
 	
 	public void addNewMessageInfoList(ArrayList<MessageInfo> messageList)
 	{
-		UserInfo loginUser=mAccountMan.getLoginUserInfo();
+		AccountManager accountMan=AppController.getInstance().getAccountManager();
+		
+		UserInfo loginUser=accountMan.getLoginUserInfo();
 		assert(loginUser!=null);
 		
 		for (MessageInfo message : messageList) 
@@ -142,9 +140,11 @@ public class FriendChatManager implements NetMessageHandler
 	//private
 	private void handleMessageChatFriend(int connection,NetMessage msg)
 	{
+		AccountManager accountMan=AppController.getInstance().getAccountManager();
+		
 		//store the message
 		NetMessageChatFriend msgChatFriend=(NetMessageChatFriend)msg;
-		MessageInfo msgInfo=new MessageInfo(msgChatFriend.getFriendID(),mAccountMan.getUserID(),msgChatFriend.getTimestamp(),msgChatFriend.getContent());
+		MessageInfo msgInfo=new MessageInfo(msgChatFriend.getFriendID(),accountMan.getUserID(),msgChatFriend.getTimestamp(),msgChatFriend.getContent());
 		addMessage(msgInfo, false);
 		
 		for(int i=0;i<mFriendChatListener.size();i++)
