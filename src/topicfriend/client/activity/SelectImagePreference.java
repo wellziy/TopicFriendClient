@@ -7,6 +7,7 @@ import topicfriend.client.database.ResourceManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
 import android.util.AttributeSet;
 import android.view.View;
@@ -33,6 +34,10 @@ public class SelectImagePreference extends Preference{
 
 	void setActivity(PreferenceActivity parent) {
 		this.parent = parent;
+	}
+
+	public String getSelectedImageName() {
+		return mSelectImageName;
 	}
 	
 	@Override
@@ -73,14 +78,20 @@ public class SelectImagePreference extends Preference{
         mSelectImageDialog.show();   
     }
 	
-    public void changeImage(String bitmapName) {
+	public void changeImage(String bitmapName) {
     	Bitmap bitmap = ResourceManager.getInstance().getBitmapFromAsset(bitmapName);
     	if (previewImageView != null) {
     		previewImageView.setImageBitmap(bitmap);
     	}
 		mSelectImageName = bitmapName;
+		//this.notifyChanged();
+		if (getOnPreferenceChangeListener() != null) {
+			this.getOnPreferenceChangeListener().onPreferenceChange(this, mSelectImageName);
+		}
+		
     }
     
+	
     private SelectImageDialog.DialogListener mDialogListener = new SelectImageDialog.DialogListener() {
 		@Override
 		public void onItemSelected(int index, String imageName) {
