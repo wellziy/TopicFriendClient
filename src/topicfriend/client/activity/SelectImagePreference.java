@@ -3,7 +3,7 @@ package topicfriend.client.activity;
 import java.util.ArrayList;
 
 import topicfriend.client.R;
-import topicfriend.client.database.ResourceManager;
+import topicfriend.client.appcontroller.ResourceManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.preference.Preference;

@@ -5,13 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import topicfriend.client.database.AppController;
-import topicfriend.client.database.Channel;
-import topicfriend.client.database.ChannelManager;
-import topicfriend.client.database.Consts;
-import topicfriend.client.database.ResourceManager;
-import topicfriend.client.database.TimeUtil;
-import topicfriend.client.database.UserManager;
+import topicfriend.client.appcontroller.AppController;
+import topicfriend.client.appcontroller.FriendChatManager;
+import topicfriend.client.appcontroller.ResourceManager;
+import topicfriend.client.appcontroller.AccountManager;
+import topicfriend.client.base.FriendChat;
+import topicfriend.client.base.Consts;
+import topicfriend.client.util.TimeUtil;
 import topicfriend.client.R;
 import topicfriend.netmessage.data.MessageInfo;
 import topicfriend.netmessage.data.UserInfo;
@@ -38,8 +38,8 @@ import android.widget.SimpleAdapter.ViewBinder;
 public class ChatFragment extends Fragment{
 	
 	private ListView listView;
-	private ChannelManager channelManager;
-	private UserManager userManager;
+	private FriendChatManager channelManager;
+	private AccountManager userManager;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -54,8 +54,8 @@ public class ChatFragment extends Fragment{
 		super.onActivityCreated(savedInstanceState);
 		
 		// init managers
-		channelManager = AppController.getInstance().getChannelManager();
-		userManager = AppController.getInstance().getUserManager();
+		channelManager = AppController.getInstance().getFriendChatManager();
+		userManager = AppController.getInstance().getAccountManager();
 		
 		this.initListView();
 	}
@@ -90,10 +90,10 @@ public class ChatFragment extends Fragment{
 	}
 
 	public void refresh() {
-		List<Channel> channelArray = channelManager.getAll();
+		List<FriendChat> channelArray = channelManager.getAll();
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		
-		for (Channel channel : channelArray) {
+		for (FriendChat channel : channelArray) {
 			MessageInfo lastMessage = channel.getLastMessage();
 			if (lastMessage == null) continue;
 			

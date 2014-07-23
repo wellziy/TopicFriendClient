@@ -1,15 +1,18 @@
 package topicfriend.client.activity;
 
 import topicfriend.client.R;
-import topicfriend.client.database.AppController;
-import topicfriend.client.database.Consts;
-import topicfriend.client.database.UserManager;
-import topicfriend.client.network.NetworkManager;
+
 import topicfriend.client.netwrapper.NetMessageHandler;
 import topicfriend.netmessage.NetMessage;
 import topicfriend.netmessage.NetMessageError;
 import topicfriend.netmessage.NetMessageID;
 import topicfriend.netmessage.NetMessageUpdateUserInfo;
+import topicfriend.client.R.layout;
+import topicfriend.client.R.menu;
+import topicfriend.client.appcontroller.AppActivityManager;
+import topicfriend.client.appcontroller.AppController;
+import topicfriend.client.appcontroller.AccountManager;
+import topicfriend.client.base.Consts;
 import topicfriend.netmessage.data.UserInfo;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,7 +33,7 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 
 	private boolean mCanEdit = false;
 	private int mUserID = Consts.InvalidID;
-	private UserManager userManager = null;
+	private AccountManager userManager = null;
 	
 	private ListPreference listSexPreference = null;
 	private EditTextPreference editTextNicknamePreference = null;
@@ -46,7 +49,7 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		super.onCreate(savedInstanceState);
 		AppActivityManager.getInstance().onActivityCreate(this);
 		
-		userManager = AppController.getInstance().getUserManager();
+		userManager = AppController.getInstance().getAccountManager();
 		// get can edit
 		mUserID = getIntent().getIntExtra(Consts.UserID, Consts.InvalidID);
 		if (mUserID == AppController.getInstance().getOwnerID()) {
@@ -124,8 +127,7 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		bindPreferenceSummaryToValue(selectImagePreference);
 		
 		if (mCanEdit == true) {
-			//buttonChatPreference.setTitle("");
-			//buttonChatPreference.setEnabled(false);
+
 		}
 		else {
 			listSexPreference.setSelectable(false);
@@ -176,23 +178,6 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	}
 	
 	private void afterPreferenceSceneDestroy() {
-		
-		if (mCanEdit) {
-//			Log.d("client", "sex: " + listSexPreference.getValue());
-//			Log.d("client", "signature: " + editTextSignaturePreference.getText());
-//			Log.d("client", "nickname: " + editTextNicknamePreference.getText());
-//			Log.d("client", "icon: " + selectImagePreference.getSelectedImageName());
-//			
-//			UserInfo userInfo = new UserInfo(
-//					AppController.getInstance().getOwnerID(),
-//					listSexPreference.getValue().equals("0")? UserInfo.SEX_MALE: UserInfo.SEX_FEMALE,
-//					editTextNicknamePreference.getText(), 
-//					editTextSignaturePreference.getText(), 
-//					selectImagePreference.getSelectedImageName());
-//			
-//			AppController.getInstance().getNetworkManager().sendDataOne(
-//					new NetMessageUpdateUserInfo(userInfo));
-		}
 		
 	}
 	

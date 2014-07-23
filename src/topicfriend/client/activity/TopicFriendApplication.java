@@ -1,6 +1,6 @@
 package topicfriend.client.activity;
 
-import topicfriend.client.database.ResourceManager;
+import topicfriend.client.appcontroller.ResourceManager;
 import android.app.Application;
 
 public class TopicFriendApplication extends Application{
@@ -21,6 +21,8 @@ public class TopicFriendApplication extends Application{
 		super.finalize();
 		
 		ResourceManager.purgeInstance();
+		
+		System.out.println("custom application finalize!");
 	}
 	
 	

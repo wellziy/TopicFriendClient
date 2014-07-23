@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import topicfriend.client.R;
-import topicfriend.client.database.AppController;
-import topicfriend.client.database.Channel;
-import topicfriend.client.database.Consts;
-import topicfriend.client.database.TimeUtil;
-import topicfriend.client.database.TopicManager;
+import topicfriend.client.appcontroller.AppController;
+import topicfriend.client.appcontroller.TopicManager;
+import topicfriend.client.base.FriendChat;
+import topicfriend.client.base.Consts;
+import topicfriend.client.util.TimeUtil;
 import topicfriend.netmessage.data.TopicInfo;
 
 import android.app.Fragment;
