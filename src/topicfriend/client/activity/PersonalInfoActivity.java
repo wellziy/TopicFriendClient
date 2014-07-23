@@ -1,6 +1,12 @@
 package topicfriend.client.activity;
 
 import topicfriend.client.R;
+
+import topicfriend.client.netwrapper.NetMessageHandler;
+import topicfriend.netmessage.NetMessage;
+import topicfriend.netmessage.NetMessageError;
+import topicfriend.netmessage.NetMessageID;
+import topicfriend.netmessage.NetMessageUpdateUserInfo;
 import topicfriend.client.R.layout;
 import topicfriend.client.R.menu;
 import topicfriend.client.appcontroller.AppActivityManager;
@@ -8,26 +14,20 @@ import topicfriend.client.appcontroller.AppController;
 import topicfriend.client.appcontroller.AccountManager;
 import topicfriend.client.base.Consts;
 import topicfriend.netmessage.data.UserInfo;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.PreferenceActivity;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.text.TextUtils;
+import android.os.Bundle;
+import android.os.Handler;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference.OnPreferenceClickListener;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
-import android.widget.Button;
 
 public class PersonalInfoActivity extends PreferenceActivity implements OnPreferenceChangeListener {
 
@@ -40,6 +40,8 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	private EditTextPreference editTextSignaturePreference = null;
 	private SelectImagePreference selectImagePreference = null;
 	private Preference buttonChatPreference = null;
+	
+	private Handler mHandler = new Handler();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -61,14 +63,15 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		this.beforePreferenceSceneCreate();
 		
 		//setContentView(R.layout.activity_personal_info);
-		addPreferencesFromResource(R.xml.pref_personal_info);
+		if (mCanEdit) addPreferencesFromResource(R.xml.pref_personal_info);
+		else addPreferencesFromResource(R.xml.pref_personal_info_other);
 
 		// bind all preferences to a special OnPreferenceChangeListener
 		listSexPreference = (ListPreference) findPreference("list_sex");
 		editTextNicknamePreference = (EditTextPreference) findPreference("edit_nickname");
 		editTextSignaturePreference = (EditTextPreference) findPreference("edit_signature");
 		selectImagePreference = (SelectImagePreference) findPreference("select_image_icon");
-		buttonChatPreference = (Preference) findPreference("button_chat");
+		if (!mCanEdit) buttonChatPreference = (Preference) findPreference("button_chat");
 		
 		this.afterPreferenceSceneCreate();
 		
@@ -106,7 +109,8 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		Editor editor = sharedPrefs.edit();
 		editor.putString("edit_nickname", user.getName());
 		editor.putString("list_sex", ""+0);
-		editor.putString("edit_signature", user.getSignature());			
+		editor.putString("edit_signature", user.getSignature());	
+		editor.putString("select_image_icon", user.getIcon());
 		editor.commit();
 		
 	}
@@ -123,12 +127,7 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		bindPreferenceSummaryToValue(selectImagePreference);
 		
 		if (mCanEdit == true) {
-			
-			
-			buttonChatPreference.setTitle("");
-			buttonChatPreference.setEnabled(false);
-			
-			
+
 		}
 		else {
 			listSexPreference.setSelectable(false);
@@ -148,11 +147,37 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 				}
 			});
 		}
+		
+		// listener update user info succeed message
+		AppController.getInstance().getNetworkManager().setMessageHandler(
+				NetMessageID.UPDATE_USER_INFO_SUCCEED, new NetMessageHandler() {
+					
+					@Override
+					public void handleMessage(int connection, NetMessage msg) {
+						mHandler.post(new Runnable() {
+							
+							@Override
+							public void run() {
+								Log.d("client", "update user info succeed!!!");
+							}
+						});
+					}
+				});
+		
+		// listener update user info succeed message
+		AppController.getInstance().getNetworkManager().setMessageHandler(
+				NetMessageID.ERROR, new NetMessageHandler() {
+					
+					@Override
+					public void handleMessage(int connection, NetMessage msg) {
+						NetMessageError msgError = (NetMessageError)msg;
+						Log.d("client", msgError.getErrorStr());
+					}
+				});
+		
 	}
 	
 	private void afterPreferenceSceneDestroy() {
-		
-		//TODO: upload information to server
 		
 	}
 	
@@ -160,15 +185,28 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	 * A preference value change listener that updates the preference's summary
 	 * to reflect its new value.
 	 */
-	private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+	private Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value) {
 			String stringValue = value.toString();
 
+			AppController app = AppController.getInstance();
+			UserInfo ownerUserInfo = app.getUserManager().getByID(app.getOwnerID());
+			boolean hasChanged = false;
+			
 			if (preference instanceof EditTextPreference) {
 				// For all other preferences, set the summary to the value's
 				// simple string representation.
 				preference.setSummary(stringValue);
+				
+				
+				if (preference.getKey().equals("edit_nickname")) {
+					hasChanged = !(((EditTextPreference) preference).getText().equals(ownerUserInfo.getName()));
+				}
+				else if (preference.getKey().equals("edit_signature")) {
+					hasChanged = !((EditTextPreference) preference).getText().equals(ownerUserInfo.getSignature());
+				}
+				
 			}
 			else if (preference instanceof ListPreference) {
 				// For list preferences, look up the correct display value in
@@ -180,7 +218,29 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 				preference
 						.setSummary(index >= 0 ? listPreference.getEntries()[index]
 								: null);
+				if (preference.getKey() == "list_sex") {
+					hasChanged = !(listPreference.getValue().equals(""+ownerUserInfo.getSex()));
+				}				
 			}
+			else if (preference instanceof SelectImagePreference) {
+				//Log.d("client", "image changed");
+				hasChanged = !(((String)(value)).equals(ownerUserInfo.getIcon()));
+			}
+			
+			if (mCanEdit && hasChanged) {
+				
+				UserInfo userInfo = new UserInfo(
+						AppController.getInstance().getOwnerID(),
+						listSexPreference.getValue().equals("0")? UserInfo.SEX_MALE: UserInfo.SEX_FEMALE,
+						editTextNicknamePreference.getText(), 
+						editTextSignaturePreference.getText(), 
+						selectImagePreference.getSelectedImageName());
+				
+				AppController.getInstance().getNetworkManager().sendDataOne(
+						new NetMessageUpdateUserInfo(userInfo));
+				
+			}
+			
 			return true;
 		}
 	};
@@ -195,7 +255,7 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	 * 
 	 * @see #sBindPreferenceSummaryToValueListener
 	 */
-	private static void bindPreferenceSummaryToValue(Preference preference) {
+	private void bindPreferenceSummaryToValue(Preference preference) {
 		// Set the listener to watch for value changes.
 		preference
 				.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
