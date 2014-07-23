@@ -21,13 +21,13 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
         android:layout_weight="10.0"
+        android:background="#eeeeee"
         android:orientation="horizontal" >
 
         <EditText
             android:id="@+id/edittext_send"
             android:layout_width="235dp"
             android:layout_height="wrap_content" />
-
 
         <Button
             android:id="@+id/button_send"

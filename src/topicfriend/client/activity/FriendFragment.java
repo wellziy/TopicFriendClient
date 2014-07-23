@@ -62,10 +62,6 @@ public class FriendFragment extends Fragment
 				Map<String, Object> itemData = (Map<String, Object>) mListView.getAdapter().getItem(position);
 				int participantID = (Integer) itemData.get(Consts.UserID);
 				
-//				// start DialogActivity
-//				Intent intent = new Intent(getActivity(), DialogActivity.class);
-//				intent.putExtra(Consts.ParticipantID, participantID);
-//				startActivity(intent);
 				// start PersonnalInfoActivity
 				Intent intent = new Intent(getActivity(), PersonalInfoActivity.class);
 				intent.putExtra(Consts.UserID, participantID);

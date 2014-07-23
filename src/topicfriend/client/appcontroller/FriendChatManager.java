@@ -1,12 +1,10 @@
 package topicfriend.client.appcontroller;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import android.os.Handler;
-
-import topicfriend.client.base.Consts;
 import topicfriend.client.base.FriendChat;
 import topicfriend.client.base.FriendChatListener;
 import topicfriend.client.netwrapper.NetMessageHandler;
@@ -16,6 +14,7 @@ import topicfriend.netmessage.NetMessageChatFriend;
 import topicfriend.netmessage.NetMessageID;
 import topicfriend.netmessage.data.MessageInfo;
 import topicfriend.netmessage.data.UserInfo;
+import android.os.Handler;
 
 public class FriendChatManager implements NetMessageHandler
 {
@@ -63,6 +62,13 @@ public class FriendChatManager implements NetMessageHandler
 	public FriendChat getFriendChatByFriendID(int fid) 
 	{ 
 		return mFriendChatMap.get(fid);
+	}
+	
+	public FriendChat createFriendChat(int fid)
+	{
+		FriendChat fc=new FriendChat(fid);
+		mFriendChatMap.put(fid, fc);
+		return fc;
 	}
 	
 	public List<FriendChat> getAllFriendChat()
@@ -121,13 +127,26 @@ public class FriendChatManager implements NetMessageHandler
 		});
 	}
 	
+	public void sendFriendChatMessage(int fid,String content)
+	{
+		NetMessageChatFriend msgChatFriend=new NetMessageChatFriend(fid, content, null);
+		AppController.getInstance().getNetworkManager().sendDataOne(msgChatFriend);
+		
+		//store the message
+		AccountManager accountMan=AppController.getInstance().getAccountManager();
+		MessageInfo msgInfo=new MessageInfo(accountMan.getUserID(), fid, new Timestamp(System.currentTimeMillis()), content);
+		addMessage(msgInfo, true);
+	}
+	
 	///////////////////////////
 	//private
 	private void handleMessageChatFriend(int connection,NetMessage msg)
 	{
+		//store the message
 		NetMessageChatFriend msgChatFriend=(NetMessageChatFriend)msg;
 		MessageInfo msgInfo=new MessageInfo(msgChatFriend.getFriendID(),mAccountMan.getUserID(),msgChatFriend.getTimestamp(),msgChatFriend.getContent());
 		addMessage(msgInfo, false);
+		
 		for(int i=0;i<mFriendChatListener.size();i++)
 		{
 			FriendChatListener listener=mFriendChatListener.get(i);
@@ -145,18 +164,18 @@ public class FriendChatManager implements NetMessageHandler
 		}
 	}
 	
-	private void addMessageToMap(int id,MessageInfo msgInfo,boolean hasRead)
+	private void addMessageToMap(int fid,MessageInfo msgInfo,boolean hasRead)
 	{
-		FriendChat fc=mFriendChatMap.get(id);
+		FriendChat fc=mFriendChatMap.get(fid);
 		if(fc!=null)
 		{
 			fc.addMessage(msgInfo, hasRead);
 		}
 		else
 		{
-			fc=new FriendChat(id);
+			fc=new FriendChat(fid);
 			fc.addMessage(msgInfo, hasRead);
-			mFriendChatMap.put(id, fc);
+			mFriendChatMap.put(fid, fc);
 		}
 	}
 }

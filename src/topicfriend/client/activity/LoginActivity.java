@@ -255,6 +255,7 @@ public class LoginActivity extends Activity
 			@Override
 			public void onLoginError(NetMessageError msgError)
 			{
+				showProgress(false);
 				accountMan.removeLoginListener(this);
 				Toast.makeText(getApplicationContext(), msgError.getErrorStr(), Toast.LENGTH_LONG).show();
 			}

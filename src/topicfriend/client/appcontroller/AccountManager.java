@@ -187,6 +187,7 @@ public class AccountManager implements NetMessageHandler
 		//add friend info list
 		FriendManager friendMan=AppController.getInstance().getFriendManager();
 		friendMan.addFriendInfoList(msgLoginSucceed.getFriendInfoList());
+		//TODO: register friend manager message handler
 		
 		//add topic list
 		TopicManager topicMan=AppController.getInstance().getTopicManager();
@@ -195,6 +196,7 @@ public class AccountManager implements NetMessageHandler
 		//friend chat message
 		FriendChatManager friendChatMan=AppController.getInstance().getFriendChatManager();
 		friendChatMan.addNewMessageInfoList(msgLoginSucceed.getUnreadMessageList());
+		friendChatMan.registerMessageHandler();
 		
 		ArrayList<LoginListener> copyListener=new ArrayList<LoginListener>(mLoginListener);
 		for(int i=0;i<copyListener.size();i++)

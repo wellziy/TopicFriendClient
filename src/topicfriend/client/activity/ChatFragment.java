@@ -87,19 +87,19 @@ public class ChatFragment extends Fragment
 
 	public void refresh()
 	{
-		List<FriendChat> channelArray = AppController.getInstance().getFriendChatManager().getAllFriendChat();
+		List<FriendChat> fcArray = AppController.getInstance().getFriendChatManager().getAllFriendChat();
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		
-		for (FriendChat channel : channelArray)
+		for (FriendChat fc : fcArray)
 		{
-			MessageInfo lastMessage = channel.getLastMessage();
+			MessageInfo lastMessage = fc.getLastMessage();
 			if (lastMessage == null)
 			{
 				continue;
 			}
 			
 			FriendManager friendMan=AppController.getInstance().getFriendManager();
-			UserInfo user = friendMan.getFriendInfoByID(channel.getFriendID());
+			UserInfo user = friendMan.getFriendInfoByID(fc.getFriendID());
 			if (user == null) 
 			{
 				continue;
@@ -112,7 +112,7 @@ public class ChatFragment extends Fragment
 			map.put("msg", lastMessage.getContent());
 			map.put("time", TimeUtil.convertTimestampToString(lastMessage.getTimetamp().getTime()));
 			map.put("img", bitmap);
-			map.put(Consts.ParticipantID, channel.getFriendID());
+			map.put(Consts.ParticipantID, fc.getFriendID());
 			list.add(map);
 		}
 		
