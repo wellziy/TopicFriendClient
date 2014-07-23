@@ -43,11 +43,7 @@ public class TopicManager
 	
 	public List<TopicInfo> getAllTopicInfo() 
 	{
-		List<TopicInfo> list = new ArrayList<TopicInfo>();
-		for (TopicInfo topic : mTopicMap.values())
-		{
-			list.add(topic);
-		}
+		List<TopicInfo> list = new ArrayList<TopicInfo>(mTopicMap.values());
 		return list;
 	}
 }

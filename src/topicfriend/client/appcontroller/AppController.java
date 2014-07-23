@@ -40,18 +40,6 @@ public class AppController
 		sController = null;
 	}
 	
-	//must call before connect to host
-	public void initNetwork() 
-	{
-		mNetManager.init();
-	}
-	
-	//must call before exit the app
-	public void destroyNetwork() 
-	{
-		mNetManager.destroy();
-	}
-	
 	public AccountManager getAccountManager() 
 	{ 
 		return mAccountManager; 
@@ -85,6 +73,11 @@ public class AppController
 	public ResourceManager getResourceManager()
 	{
 		return mResourceManager;
+	}
+	
+	public AppActivityManager getAppActivityManager()
+	{
+		return mActivityManager;
 	}
 	
 	public Handler getHandler()

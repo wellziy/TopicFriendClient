@@ -38,4 +38,9 @@ public class FriendManager
 	{
 		return m_friendList.get(id);
 	}
+	
+	public ArrayList<UserInfo> getAllFriendInfo()
+	{
+		return new ArrayList<UserInfo>(m_friendList.values());
+	}
 }

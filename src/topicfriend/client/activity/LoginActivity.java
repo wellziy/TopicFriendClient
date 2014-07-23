@@ -1,37 +1,25 @@
 package topicfriend.client.activity;
 
 import topicfriend.client.R;
+import topicfriend.client.appcontroller.AccountManager;
 import topicfriend.client.appcontroller.AppActivityManager;
 import topicfriend.client.appcontroller.AppController;
-import topicfriend.client.appcontroller.FriendChatManager;
 import topicfriend.client.appcontroller.NetworkManager;
 import topicfriend.client.appcontroller.ResourceManager;
-import topicfriend.client.base.FriendChat;
-import topicfriend.client.netwrapper.NetMessageHandler;
+import topicfriend.client.base.ConnectionListener;
+import topicfriend.client.base.LoginListener;
 import topicfriend.client.netwrapper.NetMessageReceiver;
-import topicfriend.netmessage.NetMessage;
-import topicfriend.netmessage.NetMessageChatFriend;
 import topicfriend.netmessage.NetMessageError;
-import topicfriend.netmessage.NetMessageID;
-import topicfriend.netmessage.NetMessageLogin;
 import topicfriend.netmessage.NetMessageLoginSucceed;
-import topicfriend.netmessage.NetMessageRegister;
-import topicfriend.netmessage.data.UserInfo;
-import topicfriend.network.Network;
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.TextUtils;
-import android.util.Log;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
@@ -67,17 +55,13 @@ public class LoginActivity extends Activity
 	private View mLoginFormView;
 	private View mLoginStatusView;
 	private TextView mLoginStatusMessageView;
-	
-	// Model references
-	private NetworkManager mNetManager = null;
-	private Handler mHandler = new Handler();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
 	{
 		super.onCreate(savedInstanceState);
 		// create AppActivityManager to manage all activities
-		AppActivityManager.getInstance().onActivityCreate(this);
+		AppController.getInstance().getAppActivityManager().onActivityCreate(this);
 		this.initApplication();
 		setContentView(R.layout.activity_login);
 
@@ -87,39 +71,40 @@ public class LoginActivity extends Activity
 		mEmailView.setText(mEmail);
 
 		mPasswordView = (EditText) findViewById(R.id.password);
-		mPasswordView
-				.setOnEditorActionListener(new TextView.OnEditorActionListener()
+		mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener()
+		{
+			@Override
+			public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent)
+			{
+				if (id == R.id.login || id == EditorInfo.IME_NULL) 
 				{
-					@Override
-					public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent)
-					{
-						if (id == R.id.login || id == EditorInfo.IME_NULL) 
-						{
-							attemptLogin(false);
-							return true;
-						}
-						return false;
-					}
-				});
+					attemptLogin(false);
+					return true;
+				}
+				return false;
+			}
+		});
 
 		mLoginFormView = findViewById(R.id.login_form);
 		mLoginStatusView = findViewById(R.id.login_status);
 		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
 
-		findViewById(R.id.sign_in_button).setOnClickListener(
-				new View.OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						attemptLogin(false);
-					}
-				});
-		findViewById(R.id.register_button).setOnClickListener(
-				new View.OnClickListener() {
-					@Override
-					public void onClick(View arg0) {
-						attemptLogin(true);
-					}
-				});
+		findViewById(R.id.sign_in_button).setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View view) 
+			{
+				attemptLogin(false);
+			}
+		});
+		findViewById(R.id.register_button).setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View arg0) 
+			{
+				attemptLogin(true);
+			}
+		});
 	}
 	
 	@Override
@@ -127,12 +112,14 @@ public class LoginActivity extends Activity
 	{
 		super.onDestroy();
 		
-		AppActivityManager.getInstance().onActivityDestroy(this);
-		AppActivityManager.purgeInstance();
-		AppController.log("Application ended!");
+		AppActivityManager actMan = AppController.getInstance().getAppActivityManager();
+		actMan.onActivityDestroy(this);
+		actMan.popAllActivities();
+		
+		NetworkManager netMan=AppController.getInstance().getNetworkManager();
+		netMan.destroyNetwork();
 		
 		// destroyed this application
-		AppController.getInstance().destroyNetwork();
 		AppController.purgeInstance();
 		NetMessageReceiver.getInstance().purgeInstance();
 	}
@@ -150,7 +137,7 @@ public class LoginActivity extends Activity
 	 * If there are form errors (invalid email, missing fields, etc.), the
 	 * errors are presented and no actual login attempt is made.
 	 */
-	public void attemptLogin(boolean isRegister) 
+	public void attemptLogin(final boolean isRegister) 
 	{
 		
 		// Reset errors.
@@ -192,14 +179,41 @@ public class LoginActivity extends Activity
 			// There was an error; don't attempt login and focus the first
 			// form field with an error.
 			focusView.requestFocus();
-		} else 
+		}
+		else 
 		{
 			// Show a progress spinner, and kick off a background task to
 			// perform the user login attempt.
 			mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
 			showProgress(true);
-			doLogin(isRegister);
 			
+			final NetworkManager netMan=AppController.getInstance().getNetworkManager();
+			if(!netMan.isConnected())
+			{
+				ConnectionListener listener=new ConnectionListener()
+				{
+					@Override
+					public void onConnectionLost() 
+					{
+						netMan.removeConnectionListener(this);
+					}
+					
+					@Override
+					public void onConnectSucceed() 
+					{
+						netMan.removeConnectionListener(this);
+						doLogin(isRegister);
+					}
+					
+					@Override
+					public void onConnectFailed()
+					{
+						netMan.removeConnectionListener(this);
+						Toast.makeText(LoginActivity.this, "can not connect to server", Toast.LENGTH_LONG).show();
+					}
+				};
+				netMan.addConnectionListener(listener);
+			}
 		}
 	}
 
@@ -207,71 +221,48 @@ public class LoginActivity extends Activity
 	//register or login
 	private void doLogin(boolean isRegister)
 	{
+		final AccountManager accountMan=AppController.getInstance().getAccountManager();
+		LoginListener listener=new LoginListener()
+		{
+			@Override
+			public void onLoginSucceed(NetMessageLoginSucceed msgLoginSucceed)
+			{
+				showProgress(false);
+				accountMan.removeLoginListener(this);
+				startActivity(new Intent(getApplicationContext(), MainActivity.class));
+			}
+			
+			@Override
+			public void onLoginError(NetMessageError msgError)
+			{
+				showProgress(false);
+				accountMan.removeLoginListener(this);
+				Toast.makeText(getApplicationContext(), msgError.getErrorStr(), Toast.LENGTH_LONG).show();
+			}
+		};
+		accountMan.addLoginListener(listener);
+		
 		if (isRegister) 
 		{
-			NetMessageRegister msgRegister = new NetMessageRegister(mEmail, mPassword, UserInfo.SEX_MALE);
-			mNetManager.sendDataOne(msgRegister);
+			accountMan.register(mEmail, mPassword);
 		}
 		else
 		{
-			NetMessageLogin msgLogin = new NetMessageLogin(mEmail, mPassword);
-			mNetManager.sendDataOne(msgLogin);
+			accountMan.login(mEmail, mPassword);
 		}
-		mNetManager.setMessageHandler(NetMessageID.LOGIN_SUCCEED, new NetMessageHandler()
-		{
-			@Override
-			public void handleMessage(int connection, NetMessage msg) 
-			{
-				NetMessageLoginSucceed loginMsg = (NetMessageLoginSucceed) msg;
-				// refresh all data
-				AppController.getInstance().initWithUid(loginMsg.getMyInfo().getID());
-				AppController.getInstance().getTopicManager().refreshData(loginMsg.getTopicList());
-				AppController.getInstance().getAccountManager().refreshData(loginMsg.getFriendInfoList());
-				AppController.getInstance().getAccountManager().add(loginMsg.getMyInfo());
-				AppController.getInstance().getFriendChatManager().refreshData(loginMsg.getUnreadMessageList());
-
-				mHandler.post(new Runnable() 
-				{
-					@Override
-					public void run()
-					{
-						startActivity(new Intent(getApplicationContext(), MainActivity.class));
-					}
-				});
-			}
-		});
 	}
 	
 	private void initApplication() 
 	{
-
 		// create AppController and init network and connect to server
-		AppController.getInstance().initNetwork();
-		AppController.log("Application started!");
-		// create NetReceiver
-		NetMessageReceiver.getInstance();
+		NetworkManager netMan=AppController.getInstance().getNetworkManager();
+		netMan.initNetwork();
 		
-		
-		mNetManager = AppController.getInstance().getNetworkManager();
-		mNetManager.setMessageHandler(NetMessageID.ERROR, new NetMessageHandler()
-		{
-			@Override
-			public void handleMessage(int connection, NetMessage msg)
-			{
-				final String errorStr = ((NetMessageError) msg).getErrorStr();
-				AppController.log("[network error]: "+errorStr);
-				mHandler.post(new Runnable() 
-				{
-					@Override
-					public void run() 
-					{
-						Toast.makeText(getApplicationContext(), errorStr, Toast.LENGTH_SHORT).show();
-						showProgress(false);
-					}
-				});
-			}
-		});
-		mNetManager.connectToServer();
+        // init resource manager
+        DisplayMetrics metric = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metric);
+		ResourceManager.ScreenWidth = (int) metric.widthPixels;
+		ResourceManager.ScreenHeight = (int) metric.heightPixels;
 	}
 	
 	/**
@@ -310,7 +301,8 @@ public class LoginActivity extends Activity
 							mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
 						}
 					});
-		} else
+		} 
+		else
 		{
 			// The ViewPropertyAnimator APIs are not available, so simply show
 			// and hide the relevant UI components.

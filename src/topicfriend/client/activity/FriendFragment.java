@@ -28,44 +28,38 @@ import android.widget.SimpleAdapter;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.SimpleAdapter.ViewBinder;
 
-public class FriendFragment extends Fragment{
-	
-	private ListView listView;
-	private FriendChatManager channelManager;
-	private AccountManager userManager;
-	
+public class FriendFragment extends Fragment
+{
+	private ListView mListView;
 	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState)
+	{
 		// Inflate the layout for this fragment
 		return inflater.inflate(R.layout.fragment_friend, container, false);
 	}
 	
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
+	public void onActivityCreated(Bundle savedInstanceState) 
+	{
 		// TODO Auto-generated method stub
 		super.onActivityCreated(savedInstanceState);
-		
-		// init managers
-		channelManager = AppController.getInstance().getFriendChatManager();
-		userManager = AppController.getInstance().getAccountManager();
 		
 		this.initListView();
 	}
 
-	private void initListView() {
+	private void initListView() 
+	{
 		
-		listView = (ListView)getView().findViewById(R.id.listview_main);
-		listView.setOnItemClickListener(new OnItemClickListener() {
-
+		mListView = (ListView)getView().findViewById(R.id.listview_main);
+		mListView.setOnItemClickListener(new OnItemClickListener() 
+		{
 			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int position,
-					long arg3) {
-				
+			public void onItemClick(AdapterView<?> arg0, View arg1, int position,long arg3)
+			{
 				// get Data by position
 				@SuppressWarnings("unchecked")
-				Map<String, Object> itemData = (Map<String, Object>) listView.getAdapter().getItem(position);
+				Map<String, Object> itemData = (Map<String, Object>) mListView.getAdapter().getItem(position);
 				int participantID = (Integer) itemData.get(Consts.UserID);
 				
 //				// start DialogActivity
@@ -81,17 +75,20 @@ public class FriendFragment extends Fragment{
 	}
 	
 	@Override
-	public void onResume() {
+	public void onResume() 
+	{
 		super.onResume();
 		
 		this.refresh();
 	}
 
-	public void refresh() {
-		List<UserInfo> userArray = userManager.getAllFriends();
+	public void refresh() 
+	{
+		List<UserInfo> userArray = AppController.getInstance().getFriendManager().getAllFriendInfo();
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		
-		for (UserInfo friend : userArray) {
+		for (UserInfo friend : userArray) 
+		{
 			
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("name", friend.getName());
@@ -105,19 +102,24 @@ public class FriendFragment extends Fragment{
 				new String[]{"name", "msg", "img"},
 				new int[]{R.id.name, R.id.msg, R.id.img});
 		
-		adapter.setViewBinder(new ViewBinder() {
+		adapter.setViewBinder(new ViewBinder() 
+		{
 			@Override
-			public boolean setViewValue(View view, Object data, String textRepresentation) {
-				if( view instanceof ImageView && data instanceof Bitmap){   
+			public boolean setViewValue(View view, Object data, String textRepresentation)
+			{
+				if( view instanceof ImageView && data instanceof Bitmap)
+				{   
 			        ImageView iv = (ImageView) view;   
 			        iv.setImageBitmap((Bitmap) data);   
 			        return true;   
-			    }else {
+			    }
+				else 
+				{
 			        return false;   
 			    }   
 			}
 		});
 		
-		listView.setAdapter(adapter);
+		mListView.setAdapter(adapter);
 	}
 }

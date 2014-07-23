@@ -1,6 +1,9 @@
 package topicfriend.client.netwrapper;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.http.util.ByteArrayBuffer;
 
@@ -38,9 +41,23 @@ public class NetMessageReceiver
 		m_messageHandlerMap.put(messageID, handler);
 	}
 	
-	public synchronized void removeMessageHandler(int messageID)
+	public synchronized void removeMessageHandlerByID(int messageID)
 	{
 		m_messageHandlerMap.remove(messageID);
+	}
+	
+	public synchronized void removeMessageHandler(NetMessageHandler handler)
+	{
+		Set<Entry<Integer, NetMessageHandler>> entrySet = m_messageHandlerMap.entrySet();
+		Iterator<Entry<Integer, NetMessageHandler>> iterator = entrySet.iterator();
+		while(iterator.hasNext())
+		{
+			Entry<Integer, NetMessageHandler> next = iterator.next();
+			if(next.getValue()==handler)
+			{
+				m_messageHandlerMap.remove(next.getKey());
+			}
+		}
 	}
 	
 	public synchronized void removeBadConnectionHandler()

@@ -1,61 +1,68 @@
 package topicfriend.client.appcontroller;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.http.util.ByteArrayBuffer;
 
-import android.content.Context;
-
-import topicfriend.client.base.Consts;
-import topicfriend.client.netwrapper.NetMessageHandler;
+import topicfriend.client.base.ConnectionListener;
+import topicfriend.client.netwrapper.BadConnectionHandler;
 import topicfriend.client.netwrapper.NetMessageReceiver;
 import topicfriend.netmessage.NetMessage;
-import topicfriend.netmessage.NetMessageError;
-import topicfriend.netmessage.NetMessageID;
 import topicfriend.network.Network;
+import android.os.Handler;
 
-public class NetworkManager
+public class NetworkManager implements BadConnectionHandler
 {
 	private int mConnection = Network.NULL_CONNECTION;
+	private ArrayList<ConnectionListener> mConnectionListener=new ArrayList<ConnectionListener>();
+	private Thread mConnectThread = new Thread()
+	{
+		@Override
+		public void run()
+		{
+			String hostIP="222.200.185.43";
+			int port=55555;
+			int connection=Network.NULL_CONNECTION;
+			
+			try 
+			{
+				connection = Network.connectHostPort(hostIP, port, 1000);
+				return;
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			
+			final int finalConnection=connection;
+			Handler handler=AppController.getInstance().getHandler();
+			handler.post(new Runnable()
+			{
+				@Override
+				public void run() 
+				{
+					handleConnectSucceedOrFailed(finalConnection);
+				}
+			});
+		}
+	};
 	
-	//get the connection of the client
-	public int getConnection() 
-	{ 
-		return mConnection; 
-	}
-	
-	public void init() 
+	public void initNetwork() 
 	{
 		// initialize network
 		Network.initNetwork(1, 1, 5);
-		
-		NetMessageReceiver.getInstance().setMessageHandler(NetMessageID.ERROR, new NetMessageHandler()
-		{
-			@Override
-			public void handleMessage(int connection, NetMessage msg) 
-			{
-				NetMessageError msgError=(NetMessageError)msg;
-				final String errorStr=msgError.getErrorStr();
-				System.out.println(errorStr);
-			}
-		});
 	}
 	
-	public void destroy() 
+	public void destroyNetwork() 
 	{
 		Network.destroyNetwork();
 		mConnection = Network.NULL_CONNECTION;
 	}
 	
-	
-	public void setMessageHandler(int messageID, NetMessageHandler messageHandler)
+	public boolean isConnected()
 	{
-		NetMessageReceiver.getInstance().setMessageHandler(messageID, messageHandler);
-	}
-	
-	public void removeMessageHandler(int messageID)
-	{
-		NetMessageReceiver.getInstance().removeMessageHandler(messageID);
+		return mConnection!=Network.NULL_CONNECTION;
 	}
 	
 	public void sendDataOne(ByteArrayBuffer buff) 
@@ -73,39 +80,77 @@ public class NetworkManager
 	
 	public void connectToServer() 
 	{
-		if (!mConnectThread.isAlive()) 
+		if(isConnected())
 		{
-			mConnectThread.start();
+			return;
 		}
+		mConnectThread.start();
 	}
 	
-	///////////////////////////////////////
-	// private methods
-	private Thread mConnectThread = new Thread()
+	@Override
+	public void handleBadConnection(final int connection) 
 	{
-		@Override
-		public void run()
+		Handler handler=AppController.getInstance().getHandler();
+		handler.post(new Runnable()
 		{
-			super.run();
-			
-			if(mConnection!=Network.NULL_CONNECTION)
-				return;
-			
-			String hostIP="222.200.185.43";
-			int port=55555;
-			
-			try 
+			@Override
+			public void run()
 			{
-				mConnection = Network.connectHostPort(hostIP, port, 1000);
-				return;
+				handleBadConnectionInUIThread(connection);
 			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-			
-			System.out.println("failed to connection host");
-			mConnection = Network.NULL_CONNECTION;
+		});
+	}
+	
+	//connection listener management
+	public void addConnectionListener(ConnectionListener listener)
+	{
+		mConnectionListener.add(listener);
+	}
+	
+	public void removeConnectionListener(ConnectionListener listener)
+	{
+		mConnectionListener.remove(listener);
+	}
+	
+	public void clearConnectionListener()
+	{
+		mConnectionListener.clear();
+	}
+	
+	/////////////////////////////////
+	//private
+	private void handleBadConnectionInUIThread(int connection)
+	{
+		ArrayList<ConnectionListener> copyListener=new ArrayList<ConnectionListener>(mConnectionListener);
+		for(int i=0;i<copyListener.size();i++)
+		{
+			ConnectionListener listener=copyListener.get(i);
+			listener.onConnectionLost();
 		}
-	};
+		mConnection=Network.NULL_CONNECTION;
+	}
+	
+	private void handleConnectSucceedOrFailed(int connection)
+	{
+		mConnection=connection;
+		//setup bad connection handler
+		if(connection!=Network.NULL_CONNECTION)
+		{
+			NetMessageReceiver.getInstance().setBadConnectionHandler(this);
+		}
+		
+		ArrayList<ConnectionListener> copyListener=new ArrayList<ConnectionListener>(mConnectionListener);
+		for(int i=0;i<copyListener.size();i++)
+		{
+			ConnectionListener listener=copyListener.get(i);
+			if(connection==Network.NULL_CONNECTION)
+			{
+				listener.onConnectFailed();
+			}
+			else
+			{
+				listener.onConnectSucceed();
+			}
+		}
+	}
 }

@@ -4,39 +4,39 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import android.os.Handler;
+
 import topicfriend.client.base.Consts;
 import topicfriend.client.base.FriendChat;
-import topicfriend.client.base.OnChatFriendListener;
+import topicfriend.client.base.FriendChatListener;
+import topicfriend.client.netwrapper.NetMessageHandler;
+import topicfriend.client.netwrapper.NetMessageReceiver;
+import topicfriend.netmessage.NetMessage;
+import topicfriend.netmessage.NetMessageChatFriend;
+import topicfriend.netmessage.NetMessageID;
 import topicfriend.netmessage.data.MessageInfo;
 import topicfriend.netmessage.data.UserInfo;
 
-public class FriendChatManager 
+public class FriendChatManager implements NetMessageHandler
 {
 	private HashMap<Integer, FriendChat> mFriendChatMap = new HashMap<Integer, FriendChat>();
 	private AccountManager mAccountMan=null;
-	
-	///////////////////////////////
-	//private
-	private void addMessageToMap(int id,MessageInfo msgInfo,boolean hasRead)
-	{
-		FriendChat fc=mFriendChatMap.get(id);
-		if(fc!=null)
-		{
-			fc.addMessage(msgInfo, hasRead);
-		}
-		else
-		{
-			fc=new FriendChat(id);
-			fc.addMessage(msgInfo, hasRead);
-			mFriendChatMap.put(id, fc);
-		}
-	}
+	private ArrayList<FriendChatListener> mFriendChatListener=new ArrayList<FriendChatListener>();
 	
 	/////////////////////
 	//public
 	public void init(AccountManager accountMan)
 	{
 		mAccountMan=accountMan;
+	}
+	
+	public void markFriendChatMessageRead(int fid)
+	{
+		FriendChat fc=mFriendChatMap.get(fid);
+		if(fc!=null)
+		{
+			fc.clearUnreadCount();
+		}
 	}
 	
 	public void addMessage(MessageInfo msgInfo,boolean hasRead)
@@ -78,5 +78,85 @@ public class FriendChatManager
 	public FriendChat removeFriendChatByID(int fid) 
 	{
 		return mFriendChatMap.remove(fid);
+	}
+	
+	//friend chat listener
+	public void addFriendChatListener(FriendChatListener listener)
+	{
+		mFriendChatListener.add(listener);
+	}
+	
+	public void removeFriendChatListener(FriendChatListener listener)
+	{
+		mFriendChatListener.remove(listener);
+	}
+	
+	public void clearFriendChatListener()
+	{
+		mFriendChatListener.clear();
+	}
+
+	//register message handler
+	public void registerMessageHandler()
+	{
+		NetMessageReceiver.getInstance().setMessageHandler(NetMessageID.CHAT_FRIEND, this);
+	}
+	
+	public void removeMessageHandler()
+	{
+		NetMessageReceiver.getInstance().removeMessageHandler(this);
+	}
+	
+	@Override
+	public void handleMessage(final int connection, final NetMessage msg)
+	{
+		Handler handler=AppController.getInstance().getHandler();
+		handler.post(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				handleMessageUIThread(connection, msg);
+			}
+		});
+	}
+	
+	///////////////////////////
+	//private
+	private void handleMessageChatFriend(int connection,NetMessage msg)
+	{
+		NetMessageChatFriend msgChatFriend=(NetMessageChatFriend)msg;
+		MessageInfo msgInfo=new MessageInfo(msgChatFriend.getFriendID(),mAccountMan.getUserID(),msgChatFriend.getTimestamp(),msgChatFriend.getContent());
+		addMessage(msgInfo, false);
+		for(int i=0;i<mFriendChatListener.size();i++)
+		{
+			FriendChatListener listener=mFriendChatListener.get(i);
+			listener.onReceiveFriendMessage(msgChatFriend);
+		}
+	}
+	
+	private void handleMessageUIThread(int connection,NetMessage msg)
+	{
+		switch(msg.getMessageID())
+		{
+		case NetMessageID.CHAT_FRIEND:
+			handleMessageChatFriend(connection, msg);
+			break;
+		}
+	}
+	
+	private void addMessageToMap(int id,MessageInfo msgInfo,boolean hasRead)
+	{
+		FriendChat fc=mFriendChatMap.get(id);
+		if(fc!=null)
+		{
+			fc.addMessage(msgInfo, hasRead);
+		}
+		else
+		{
+			fc=new FriendChat(id);
+			fc.addMessage(msgInfo, hasRead);
+			mFriendChatMap.put(id, fc);
+		}
 	}
 }
