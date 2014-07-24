@@ -1,5 +1,6 @@
 package topicfriend.client.netwrapper;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -100,7 +101,16 @@ public class NetMessageReceiver
 					int recvConnection=Network.receiveData(buf, Network.NULL_CONNECTION);
 					if(recvConnection!=Network.NULL_CONNECTION)
 					{
-						NetMessage msg=NetMessage.fromJsonString(new String(buf.buffer()));
+						NetMessage msg=null;
+						try
+						{
+							msg = NetMessage.fromJsonString(new String(buf.buffer(),"UTF8"));
+						} 
+						catch (UnsupportedEncodingException e)
+						{
+							e.printStackTrace();
+						}
+						
 						if(msg==null)
 						{
 							Network.makeBadConnection(recvConnection);

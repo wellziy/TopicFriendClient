@@ -28,6 +28,11 @@ public class FriendManager
 		m_friendList.put(id, userInfo);
 	}
 	
+	public boolean isMyFriend(Integer id)
+	{
+		return m_friendList.get(id)!=null;
+	}
+	
 	public void removeFriend(Integer id)
 	{
 		m_friendList.remove(id);

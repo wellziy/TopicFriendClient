@@ -61,6 +61,8 @@ public class ChatFriendActivity extends Activity implements FriendChatListener
 		
 		AppController.getInstance().getAppActivityManager().onActivityCreate(this);
 		FriendChatManager friendChatMan= AppController.getInstance().getFriendChatManager();
+		//mark the message read and start new activity
+		friendChatMan.markFriendChatMessageRead(mFriendID);
 		// get or create a channel with the participant
 		friendChatMan.addFriendChatListener(this);
 		
@@ -157,6 +159,9 @@ public class ChatFriendActivity extends Activity implements FriendChatListener
 	{
 		FriendManager friendMan=AppController.getInstance().getFriendManager();
 		UserInfo friendInfo=friendMan.getFriendInfoByID(mFriendID);
+		
+		FriendChatManager friendChatMan=AppController.getInstance().getFriendChatManager();
+		friendChatMan.markFriendChatMessageRead(mFriendID);
 		
 		appendMessageToLayout(friendInfo.getIcon(), msg.getContent(), true);
 		scrollToBottom();

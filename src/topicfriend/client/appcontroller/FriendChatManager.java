@@ -2,6 +2,8 @@ package topicfriend.client.appcontroller;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -71,12 +73,33 @@ public class FriendChatManager implements NetMessageHandler
 	
 	public List<FriendChat> getAllFriendChat()
 	{
-		List<FriendChat> channelArray = new ArrayList<FriendChat>();
-		for (FriendChat channel : mFriendChatMap.values())
+		List<FriendChat> fcArray = new ArrayList<FriendChat>(mFriendChatMap.values());
+		return fcArray;
+	}
+	
+	public List<FriendChat> getAllFriendChatOrderByLastMessageTS()
+	{
+		ArrayList<FriendChat> res=new ArrayList<FriendChat>();
+		for(FriendChat fc: mFriendChatMap.values())
 		{
-			channelArray.add(channel);
+			if(fc.getLastMessage()!=null)
+			{
+				res.add(fc);
+			}
 		}
-		return channelArray;
+		
+		Collections.sort(res,new Comparator<FriendChat>() 
+		{
+			@Override
+			public int compare(FriendChat lhs, FriendChat rhs)
+			{
+				Timestamp t1=lhs.getLastMessage().getTimetamp();
+				Timestamp t2=rhs.getLastMessage().getTimetamp();
+				return t2.compareTo(t1);
+			}
+		});
+		
+		return res;
 	}
 	
 	public FriendChat removeFriendChatByID(int fid) 

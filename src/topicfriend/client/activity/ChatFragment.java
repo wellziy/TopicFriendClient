@@ -5,38 +5,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import topicfriend.client.R;
 import topicfriend.client.appcontroller.AppController;
-import topicfriend.client.appcontroller.FriendChatManager;
 import topicfriend.client.appcontroller.FriendManager;
 import topicfriend.client.appcontroller.ResourceManager;
-import topicfriend.client.appcontroller.AccountManager;
-import topicfriend.client.base.FriendChat;
 import topicfriend.client.base.Consts;
+import topicfriend.client.base.FriendChat;
+import topicfriend.client.base.FriendChatListener;
 import topicfriend.client.util.TimeUtil;
-import topicfriend.client.R;
+import topicfriend.netmessage.NetMessageChatFriend;
 import topicfriend.netmessage.data.MessageInfo;
 import topicfriend.netmessage.data.UserInfo;
-
-
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView.FindListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleAdapter.ViewBinder;
+import android.widget.TextView;
 
-public class ChatFragment extends Fragment
+public class ChatFragment extends Fragment implements FriendChatListener
 {
 	private ListView mListView;
 	
@@ -60,7 +55,6 @@ public class ChatFragment extends Fragment
 		mListView = (ListView)getView().findViewById(R.id.listview_main);
 		mListView.setOnItemClickListener(new OnItemClickListener() 
 		{
-
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int position,long arg3)
 			{
@@ -69,7 +63,7 @@ public class ChatFragment extends Fragment
 				Map<String, Object> itemData = (Map<String, Object>) mListView.getAdapter().getItem(position);
 				int participantID = (Integer) itemData.get(Consts.ParticipantID);
 				
-				// start DialogActivity
+				// start chat friend activity
 				Intent intent = new Intent(getActivity(), ChatFriendActivity.class);
 				intent.putExtra(Consts.ParticipantID, participantID);
 				startActivity(intent);
@@ -82,12 +76,20 @@ public class ChatFragment extends Fragment
 	{
 		super.onResume();
 		
+		AppController.getInstance().getFriendChatManager().addFriendChatListener(this);
 		this.refresh();
 	}
 
+	@Override
+	public void onStop() 
+	{
+		AppController.getInstance().getFriendChatManager().removeFriendChatListener(this);
+		super.onStop();
+	}
+	
 	public void refresh()
 	{
-		List<FriendChat> fcArray = AppController.getInstance().getFriendChatManager().getAllFriendChat();
+		List<FriendChat> fcArray = AppController.getInstance().getFriendChatManager().getAllFriendChatOrderByLastMessageTS();
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		
 		for (FriendChat fc : fcArray)
@@ -112,13 +114,14 @@ public class ChatFragment extends Fragment
 			map.put("msg", lastMessage.getContent());
 			map.put("time", TimeUtil.convertTimestampToString(lastMessage.getTimetamp().getTime()));
 			map.put("img", bitmap);
+			map.put("unreadcount", fc.getUnreadCount());
 			map.put(Consts.ParticipantID, fc.getFriendID());
 			list.add(map);
 		}
 		
 		SimpleAdapter adapter = new SimpleAdapter(getActivity(), list, R.layout.listitem_chat,
-				new String[]{"name", "msg", "img", "time"},
-				new int[]{R.id.name, R.id.msg, R.id.img, R.id.time});
+				new String[]{"name", "msg", "img", "time","unreadcount"},
+				new int[]{R.id.name, R.id.msg, R.id.img, R.id.time,R.id.unreadcount_text});
 		
 		adapter.setViewBinder(new ViewBinder() 
 		{
@@ -131,6 +134,21 @@ public class ChatFragment extends Fragment
 			        iv.setImageBitmap((Bitmap) data);   
 			        return true;   
 			    }
+				else if(view.getId()==R.id.unreadcount_text)
+				{
+					TextView textView=(TextView)view;
+					int count=(Integer)data;
+					textView.setText(""+count);
+					if(count<=0)
+					{
+						view.setVisibility(View.INVISIBLE);
+					}
+					else
+					{
+						view.setVisibility(View.VISIBLE);
+					}
+					return true;
+				}
 				else 
 				{
 			        return false;   
@@ -139,5 +157,11 @@ public class ChatFragment extends Fragment
 		});
 		
 		mListView.setAdapter(adapter);
+	}
+
+	@Override
+	public void onReceiveFriendMessage(NetMessageChatFriend msg)
+	{
+		refresh();
 	}
 }

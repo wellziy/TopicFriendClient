@@ -165,10 +165,11 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 				@Override
 				public boolean onPreferenceClick(Preference preference)
 				{
-					
+					//start chat friend activity and finished this activity
 					Intent intent = new Intent(PersonalInfoActivity.this, ChatFriendActivity.class);
 					intent.putExtra(Consts.ParticipantID, user.getID());
 					startActivity(intent);
+					PersonalInfoActivity.this.finish();
 					
 					return true;
 				}

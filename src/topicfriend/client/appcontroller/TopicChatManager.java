@@ -167,16 +167,32 @@ public class TopicChatManager implements NetMessageHandler
 	private void handleMessageNewFriend(int connection,NetMessage msg)
 	{
 		NetMessageNewFriend msgNewFriend=(NetMessageNewFriend)msg;
+		
+		//dispatch both like message
+		{
+			ArrayList<TopicChatListener> copyListener=new ArrayList<TopicChatListener>(mTopicChatListener);
+			for(int i=0;i<copyListener.size();i++)
+			{
+				TopicChatListener listener=copyListener.get(i);
+				listener.onTopicChatBothLike();
+			}
+		}
+		
 		//add the new friend into friend manager
-		AppController.getInstance().getFriendManager().addFriend(mMatchedUserInfo.getID(), mMatchedUserInfo);
+		FriendManager friendMan=AppController.getInstance().getFriendManager();
 		
 		//TODO: dont need the user info from this message????just use the matched user info
 		//UserInfo newFriendInfo=msgNewFriend.getNewFriendInfo();
-		ArrayList<TopicChatListener> copyListener=new ArrayList<TopicChatListener>(mTopicChatListener);
-		for(int i=0;i<copyListener.size();i++)
+		if(!friendMan.isMyFriend(mMatchedUserInfo.getID()))
 		{
-			TopicChatListener listener=copyListener.get(i);
-			listener.onBecameNewFriend(mMatchedUserInfo);
+			friendMan.addFriend(mMatchedUserInfo.getID(), mMatchedUserInfo);
+			
+			ArrayList<TopicChatListener> copyListener=new ArrayList<TopicChatListener>(mTopicChatListener);
+			for(int i=0;i<copyListener.size();i++)
+			{
+				TopicChatListener listener=copyListener.get(i);
+				listener.onMadeNewFriend(mMatchedUserInfo);
+			}
 		}
 	}
 	

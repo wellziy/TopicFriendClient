@@ -7,6 +7,8 @@ import java.util.Map;
 
 import topicfriend.client.R;
 import topicfriend.client.appcontroller.AppController;
+import topicfriend.client.appcontroller.FriendManager;
+import topicfriend.client.appcontroller.TopicChatManager;
 import topicfriend.client.base.Consts;
 import topicfriend.client.base.TopicChatListener;
 import topicfriend.netmessage.NetMessageChatRoom;
@@ -150,9 +152,9 @@ public class DiscoveryFragment extends Fragment implements TopicChatListener
 	}
 
 	@Override
-	public void onBecameNewFriend(UserInfo newFriendInfo)
+	public void onMadeNewFriend(UserInfo newFriendInfo)
 	{
-		showToast("BecameNewFriend with "+newFriendInfo.getName());
+		showToast("Bingo,you make a new friend "+newFriendInfo.getName());
 	}
 	
 	////////////////////////////////
@@ -160,5 +162,17 @@ public class DiscoveryFragment extends Fragment implements TopicChatListener
 	private void showToast(String text)
 	{
 		Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
+	}
+
+	@Override
+	public void onTopicChatBothLike() 
+	{
+		TopicChatManager topicChatMan=AppController.getInstance().getTopicChatManager();
+		UserInfo matchedUserInfo=topicChatMan.getMatchedUserInfo();
+		FriendManager friendMan=AppController.getInstance().getFriendManager();
+		if(friendMan.isMyFriend(matchedUserInfo.getID()))
+		{
+			showToast("Bingo,the opposite side is your friend "+matchedUserInfo.getName());
+		}
 	}
 }

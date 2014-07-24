@@ -3,6 +3,7 @@ package topicfriend.client.activity;
 import topicfriend.client.R;
 import topicfriend.client.appcontroller.AccountManager;
 import topicfriend.client.appcontroller.AppController;
+import topicfriend.client.appcontroller.FriendManager;
 import topicfriend.client.appcontroller.ResourceManager;
 import topicfriend.client.appcontroller.TopicChatManager;
 import topicfriend.client.base.TopicChatListener;
@@ -126,13 +127,14 @@ public class ChatRoomActivity extends Activity implements TopicChatListener
 	@Override
 	public void onOtherExitTopicChat(UserInfo matchedUserInfo) 
 	{
-		showToast("Other exit topic chat");
+		mLikeButton.setClickable(false);
+		showToast("The opposite side exit the topic chat!");
 	}
 
 	@Override
-	public void onBecameNewFriend(UserInfo newFriendInfo)
+	public void onMadeNewFriend(UserInfo newFriendInfo)
 	{
-		showToast("BecameNewFriend with "+newFriendInfo.getName());
+		showToast("Bingo,you make a new friend "+newFriendInfo.getName());
 	}
 	
 	public void appendMessageToLayout(String iconPath,String content,boolean isLeft)
@@ -180,5 +182,17 @@ public class ChatRoomActivity extends Activity implements TopicChatListener
 				mMessageScrollView.fullScroll(View.FOCUS_DOWN);
 			}
 		});
+	}
+
+	@Override
+	public void onTopicChatBothLike() 
+	{
+		TopicChatManager topicChatMan=AppController.getInstance().getTopicChatManager();
+		UserInfo matchedUserInfo=topicChatMan.getMatchedUserInfo();
+		FriendManager friendMan=AppController.getInstance().getFriendManager();
+		if(friendMan.isMyFriend(matchedUserInfo.getID()))
+		{
+			showToast("Bingo,the opposite side is your friend "+matchedUserInfo.getName());
+		}
 	}
 }

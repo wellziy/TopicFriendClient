@@ -8,5 +8,6 @@ public interface TopicChatListener
 	public void onReceiveTopicChatMessage(NetMessageChatRoom msgChatRoom);
 	public void onTopicMatchSucceed(UserInfo matchedUserInfo);
 	public void onOtherExitTopicChat(UserInfo matchedUserInfo);
-	public void onBecameNewFriend(UserInfo newFriendInfo);
+	public void onTopicChatBothLike();
+	public void onMadeNewFriend(UserInfo newFriendInfo);
 }
