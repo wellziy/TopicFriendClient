@@ -9,6 +9,7 @@ import java.util.List;
 
 import topicfriend.client.base.FriendChat;
 import topicfriend.client.base.FriendChatListener;
+import topicfriend.client.db.MessageDAO;
 import topicfriend.client.netwrapper.NetMessageHandler;
 import topicfriend.client.netwrapper.NetMessageReceiver;
 import topicfriend.netmessage.NetMessage;
@@ -46,7 +47,7 @@ public class FriendChatManager implements NetMessageHandler
 		addMessageToMap(friendID, msgInfo, hasRead);
 	}
 	
-	public void addNewMessageInfoList(ArrayList<MessageInfo> messageList)
+	public void addMessageInfoList(ArrayList<MessageInfo> messageList,boolean hasRead)
 	{
 		AccountManager accountMan=AppController.getInstance().getAccountManager();
 		
@@ -55,7 +56,7 @@ public class FriendChatManager implements NetMessageHandler
 		
 		for (MessageInfo message : messageList) 
 		{
-			addMessage(message, false);
+			addMessage(message, hasRead);
 		}
 	}
 	
@@ -157,6 +158,10 @@ public class FriendChatManager implements NetMessageHandler
 		AccountManager accountMan=AppController.getInstance().getAccountManager();
 		MessageInfo msgInfo=new MessageInfo(accountMan.getUserID(), fid, new Timestamp(System.currentTimeMillis()), content);
 		addMessage(msgInfo, true);
+		
+		//save message to db
+		MessageDAO msgDAO=new MessageDAO(AppController.getInstance().getContext());
+		msgDAO.insertMessageInfo(msgInfo);
 	}
 	
 	///////////////////////////
@@ -170,6 +175,11 @@ public class FriendChatManager implements NetMessageHandler
 		MessageInfo msgInfo=new MessageInfo(msgChatFriend.getFriendID(),accountMan.getUserID(),msgChatFriend.getTimestamp(),msgChatFriend.getContent());
 		addMessage(msgInfo, false);
 		
+		//save message to db
+		MessageDAO msgDAO=new MessageDAO(AppController.getInstance().getContext());
+		msgDAO.insertMessageInfo(msgInfo);
+		
+		//notify all listeners
 		for(int i=0;i<mFriendChatListener.size();i++)
 		{
 			FriendChatListener listener=mFriendChatListener.get(i);

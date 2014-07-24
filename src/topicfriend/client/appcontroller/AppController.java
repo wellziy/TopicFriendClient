@@ -1,7 +1,7 @@
 package topicfriend.client.appcontroller;
 
+import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 
 public class AppController
 {
@@ -18,6 +18,7 @@ public class AppController
 	private AppActivityManager mActivityManager=new AppActivityManager();
 	//shared handler
 	private Handler mHandler=new Handler();
+	private Context mContext=null;
 	
 	private AppController()
 	{
@@ -31,6 +32,11 @@ public class AppController
 			sController = new AppController();
 		}
 		return sController;
+	}
+	
+	public void initContext(Context context)
+	{
+		mContext=context;
 	}
 	
 	public static synchronized void purgeInstance() 
@@ -82,5 +88,10 @@ public class AppController
 	public Handler getHandler()
 	{
 		return mHandler;
+	}
+	
+	public Context getContext()
+	{
+		return mContext;
 	}
 }

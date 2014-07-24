@@ -66,6 +66,9 @@ public class LoginActivity extends Activity
 		this.initApplication();
 		setContentView(R.layout.activity_login);
 
+		//force set action bar title
+		getActionBar().setTitle("TopicFriend");
+		
 		// Set up the login form.
 		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
 		mEmailView = (EditText) findViewById(R.id.email);
@@ -278,6 +281,9 @@ public class LoginActivity extends Activity
 	
 	private void initApplication() 
 	{
+		//init app controller context
+		AppController.getInstance().initContext(getApplicationContext());
+		
 		// create AppController and init network and connect to server
 		NetworkManager netMan=AppController.getInstance().getNetworkManager();
 		netMan.initNetwork();

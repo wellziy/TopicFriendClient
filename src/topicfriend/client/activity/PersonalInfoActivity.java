@@ -49,7 +49,6 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
 	{
-		
 		super.onCreate(savedInstanceState);
 		AppController.getInstance().getAppActivityManager().onActivityCreate(this);
 		
@@ -126,6 +125,9 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	
 	private void afterPreferenceSceneCreate() 
 	{
+		//force set action bar title
+		getActionBar().setTitle("Personal Information");
+		
 		// initialize Image Select Preference
 		final UserInfo user = mUserInfo;
 		selectImagePreference.setActivity(this);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import topicfriend.client.base.LoginListener;
 import topicfriend.client.base.UserInfoUpdateListener;
+import topicfriend.client.db.MessageDAO;
 import topicfriend.client.netwrapper.NetMessageHandler;
 import topicfriend.client.netwrapper.NetMessageReceiver;
 import topicfriend.netmessage.NetMessage;
@@ -14,6 +15,7 @@ import topicfriend.netmessage.NetMessageLoginSucceed;
 import topicfriend.netmessage.NetMessageRegister;
 import topicfriend.netmessage.NetMessageUpdateUserInfo;
 import topicfriend.netmessage.NetMessageUpdateUserInfoSucceed;
+import topicfriend.netmessage.data.MessageInfo;
 import topicfriend.netmessage.data.UserInfo;
 import android.os.Handler;
 
@@ -195,7 +197,15 @@ public class AccountManager implements NetMessageHandler
 		
 		//friend chat message
 		FriendChatManager friendChatMan=AppController.getInstance().getFriendChatManager();
-		friendChatMan.addNewMessageInfoList(msgLoginSucceed.getUnreadMessageList());
+		
+		//load all message from db
+		MessageDAO msgDAO=new MessageDAO(AppController.getInstance().getContext());
+		for(UserInfo friendInfo:msgLoginSucceed.getFriendInfoList())
+		{
+			ArrayList<MessageInfo> msgArr = msgDAO.fetchFriendChatMessageWithLimit(friendInfo.getID(), 100);
+			friendChatMan.addMessageInfoList(msgArr,true);
+		}
+		friendChatMan.addMessageInfoList(msgLoginSucceed.getUnreadMessageList(),false);
 		friendChatMan.registerMessageHandler();
 		
 		//topic chat manager
