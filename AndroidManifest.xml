@@ -31,12 +31,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="topicfriend.client.activity.SettingsActivity"
-            android:label="@string/title_activity_settings" >
-            
-        </activity>
-        <activity
             android:name="topicfriend.client.activity.DialogActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
             android:label="@string/title_activity_dialog"
             android:windowSoftInputMode="adjustPan" >
         </activity>
@@ -45,7 +41,8 @@
             android:label="@string/title_activity_personal_info" >
             
         </activity>
-        <activity android:name="topicfriend.client.activity.ChatRoomActivity"></activity>
+        <activity android:name="topicfriend.client.activity.ChatRoomActivity"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"></activity>
     </application>
 
 </manifest>

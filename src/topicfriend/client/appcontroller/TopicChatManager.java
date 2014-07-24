@@ -2,6 +2,7 @@ package topicfriend.client.appcontroller;
 
 import java.util.ArrayList;
 
+import topicfriend.client.base.Consts;
 import topicfriend.client.base.TopicChatListener;
 import topicfriend.client.netwrapper.NetMessageHandler;
 import topicfriend.client.netwrapper.NetMessageReceiver;
@@ -13,6 +14,7 @@ import topicfriend.netmessage.NetMessageLeaveRoom;
 import topicfriend.netmessage.NetMessageLike;
 import topicfriend.netmessage.NetMessageMatchSucceed;
 import topicfriend.netmessage.NetMessageNewFriend;
+import topicfriend.netmessage.data.TopicInfo;
 import topicfriend.netmessage.data.UserInfo;
 import android.os.Handler;
 
@@ -20,6 +22,8 @@ public class TopicChatManager implements NetMessageHandler
 {
 	private ArrayList<TopicChatListener> mTopicChatListener=new ArrayList<TopicChatListener>();
 	private UserInfo mMatchedUserInfo=null;
+	private int mLastMatchingTopicID=Consts.InvalidID;
+	private int mMatchedTopicID=Consts.InvalidID;
 	//TODO: not implement yet,the counter is used to check whether an user give up matching a topic and start to match another topic,
 	//and the two topic may has the same topicID
 	private int mMatchingCounter=0;
@@ -43,6 +47,16 @@ public class TopicChatManager implements NetMessageHandler
 	public void clearTopicChatListener()
 	{
 		mTopicChatListener.clear();
+	}
+	
+	public int getMatchedTopicID()
+	{
+		return mMatchedTopicID;
+	}
+	
+	public TopicInfo getMatchedTopicInfo()
+	{
+		return AppController.getInstance().getTopicManager().getTopicInfoByID(mMatchedTopicID);
 	}
 	
 	public void registerMessageHandler()
@@ -75,6 +89,7 @@ public class TopicChatManager implements NetMessageHandler
 	public void reqJoinTopic(int topicID)
 	{
 		mMatchingCounter++;
+		mLastMatchingTopicID=topicID;
 		
 		NetMessageJoinTopic msgJoinTopic=new NetMessageJoinTopic(topicID);
 		AppController.getInstance().getNetworkManager().sendDataOne(msgJoinTopic);
@@ -82,6 +97,8 @@ public class TopicChatManager implements NetMessageHandler
 	
 	public void reqLeaveRoom()
 	{
+		mMatchedTopicID=Consts.InvalidID;
+		
 		NetMessageLeaveRoom msgLeaveRoom=new NetMessageLeaveRoom();
 		AppController.getInstance().getNetworkManager().sendDataOne(msgLeaveRoom);
 	}
@@ -166,6 +183,7 @@ public class TopicChatManager implements NetMessageHandler
 	private void handleMessageMatchSucceed(int connection,NetMessage msg)
 	{
 		NetMessageMatchSucceed msgMatchSucceed=(NetMessageMatchSucceed)msg;
+		mMatchedTopicID=mLastMatchingTopicID;
 		
 		mMatchedUserInfo=msgMatchSucceed.getMatchedUserInfo();
 		ArrayList<TopicChatListener> copyListener=new ArrayList<TopicChatListener>(mTopicChatListener);
