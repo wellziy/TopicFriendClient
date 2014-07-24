@@ -166,7 +166,7 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 				public boolean onPreferenceClick(Preference preference)
 				{
 					
-					Intent intent = new Intent(PersonalInfoActivity.this, DialogActivity.class);
+					Intent intent = new Intent(PersonalInfoActivity.this, ChatFriendActivity.class);
 					intent.putExtra(Consts.ParticipantID, user.getID());
 					startActivity(intent);
 					

@@ -70,7 +70,7 @@ public class ChatFragment extends Fragment
 				int participantID = (Integer) itemData.get(Consts.ParticipantID);
 				
 				// start DialogActivity
-				Intent intent = new Intent(getActivity(), DialogActivity.class);
+				Intent intent = new Intent(getActivity(), ChatFriendActivity.class);
 				intent.putExtra(Consts.ParticipantID, participantID);
 				startActivity(intent);
 			}

@@ -16,8 +16,8 @@ public class NetworkManager implements BadConnectionHandler
 {
 	private int mConnection = Network.NULL_CONNECTION;
 	private ArrayList<ConnectionListener> mConnectionListener=new ArrayList<ConnectionListener>();
-	private Thread mConnectThread = new Thread(new Runnable()
-	{
+	private Runnable mConnectWorker=new Runnable()
+	{	
 		@Override
 		public void run() 
 		{
@@ -45,7 +45,8 @@ public class NetworkManager implements BadConnectionHandler
 				}
 			});
 		}
-	});
+	};
+	private Thread mConnectThread = null;
 	
 	public void initNetwork() 
 	{
@@ -79,10 +80,12 @@ public class NetworkManager implements BadConnectionHandler
 	
 	public void connectToServer() 
 	{
-		if(isConnected())
+		if(isConnected()||mConnectThread!=null)
 		{
 			return;
 		}
+		
+		mConnectThread=new Thread(mConnectWorker);
 		mConnectThread.start();
 	}
 	
@@ -151,5 +154,8 @@ public class NetworkManager implements BadConnectionHandler
 				listener.onConnectSucceed();
 			}
 		}
+		
+		//reset connect thread
+		mConnectThread=null;
 	}
 }

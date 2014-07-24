@@ -106,13 +106,14 @@ public class DiscoveryFragment extends Fragment implements TopicChatListener
 		{
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("title", topic.getTitle());
+			map.put("description", topic.getDescription());
 			map.put(Consts.TopicID, topic.getID());
 			list.add(map);
 		}
 		
 		SimpleAdapter adapter = new SimpleAdapter(getActivity(), list, R.layout.listitem_discovery,
-				new String[]{"title"},
-				new int[]{R.id.textview_title});
+				new String[]{"title","description"},
+				new int[]{R.id.textview_title,R.id.textview_description});
 		
 		mListView.setAdapter(adapter);
 	}

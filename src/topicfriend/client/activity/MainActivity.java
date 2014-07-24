@@ -2,22 +2,29 @@ package topicfriend.client.activity;
 
 import topicfriend.client.R;
 import topicfriend.client.appcontroller.AppController;
+import topicfriend.client.appcontroller.ResourceManager;
 import topicfriend.client.base.Consts;
+import topicfriend.netmessage.data.UserInfo;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends Activity 
 {
-	private DiscoveryFragment discoveryFragment;
-	private ChatFragment chatFragment;
-	private FriendFragment friendFragment;
+	private DiscoveryFragment mDiscoveryFragment;
+	private ChatFragment mChatFragment;
+	private FriendFragment mFriendFragment;
+	private ActionBar mActionBar;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -27,25 +34,42 @@ public class MainActivity extends Activity
 		setContentView(R.layout.activity_main);
 		
 		//set action bar navigation mode
-		ActionBar actionbar = getActionBar();
-		actionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		mActionBar = getActionBar();
+		mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		
+		updateActionBar();
 		
 		 //create fragments
-        discoveryFragment = new DiscoveryFragment();  
-        chatFragment = new ChatFragment(); 
-        friendFragment = new FriendFragment();
+        mDiscoveryFragment = new DiscoveryFragment();  
+        mChatFragment = new ChatFragment(); 
+        mFriendFragment = new FriendFragment();
 		
-        actionbar.addTab(actionbar.newTab()
+        mActionBar.addTab(mActionBar.newTab()
         		.setText("discovery")
-        		.setTabListener(new MyTabsListener(discoveryFragment)));
+        		.setTabListener(new MyTabsListener(mDiscoveryFragment)));
         
-        actionbar.addTab(actionbar.newTab()
+        mActionBar.addTab(mActionBar.newTab()
         		.setText("chat")
-        		.setTabListener(new MyTabsListener(chatFragment)));
+        		.setTabListener(new MyTabsListener(mChatFragment)));
         
-        actionbar.addTab(actionbar.newTab()
+        mActionBar.addTab(mActionBar.newTab()
         		.setText("friend")
-        		.setTabListener(new MyTabsListener(friendFragment)));
+        		.setTabListener(new MyTabsListener(mFriendFragment)));
+	}
+	
+	public void updateActionBar()
+	{
+		UserInfo loginUserInfo=AppController.getInstance().getAccountManager().getLoginUserInfo();
+		Bitmap bitmap = ResourceManager.getInstance().getBitmapFromAsset(loginUserInfo.getIcon());
+		mActionBar.setIcon(new BitmapDrawable(bitmap));
+		mActionBar.setTitle(loginUserInfo.getName());
+	}
+	
+	@Override
+	protected void onResume() 
+	{
+		updateActionBar();
+		super.onResume();
 	}
 	
 	@Override

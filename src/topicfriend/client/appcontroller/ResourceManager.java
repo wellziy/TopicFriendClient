@@ -60,7 +60,7 @@ public class ResourceManager
 		if (bitmap == null) 
 		{
 			//TODO: remove the following recursion call
-			bitmap = this.getBitmapFromAsset("cocos2dx_icon.png");
+			bitmap = this.getBitmapFromAsset("icon_default.jpg");
 		}
 		return bitmap;
 	}
