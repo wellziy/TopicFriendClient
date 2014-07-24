@@ -25,4 +25,6 @@
     <!-- chat button -->
     <string name="person_send_message">与他/她聊天</string>
     
+    <string name="save_personal_information">保存个人信息</string>
+    
 </resources>

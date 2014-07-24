@@ -49,7 +49,7 @@ public class DiscoveryFragment extends Fragment implements TopicChatListener
 		initListView();
 		mMatchingProgressDialog=new ProgressDialog(getActivity());
 		mMatchingProgressDialog.setCancelable(false);
-		mMatchingProgressDialog.setTitle("Matching Online User...");
+		mMatchingProgressDialog.setTitle("Matching online user...");
 		mMatchingProgressDialog.setButton(ProgressDialog.BUTTON_NEGATIVE, "Cancel", new OnClickListener()
 		{
 			@Override

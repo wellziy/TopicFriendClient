@@ -1,25 +1,15 @@
 package topicfriend.client.activity;
 
 import topicfriend.client.R;
-
-import topicfriend.client.netwrapper.NetMessageHandler;
-import topicfriend.netmessage.NetMessage;
-import topicfriend.netmessage.NetMessageError;
-import topicfriend.netmessage.NetMessageID;
-import topicfriend.netmessage.NetMessageUpdateUserInfo;
-import topicfriend.client.R.layout;
-import topicfriend.client.R.menu;
-import topicfriend.client.appcontroller.AppActivityManager;
 import topicfriend.client.appcontroller.AppController;
-import topicfriend.client.appcontroller.AccountManager;
 import topicfriend.client.base.Consts;
 import topicfriend.client.base.UserInfoUpdateListener;
+import topicfriend.netmessage.NetMessageError;
 import topicfriend.netmessage.data.UserInfo;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -27,7 +17,6 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
@@ -40,20 +29,20 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	private EditTextPreference editTextNicknamePreference = null;
 	private EditTextPreference editTextSignaturePreference = null;
 	private SelectImagePreference selectImagePreference = null;
-	private Preference buttonChatPreference = null;
+	private Preference buttonOtherPreference = null;
 	private UserInfoUpdateListener mUserInfoUpdateListener=new UserInfoUpdateListener()
 	{
 		@Override
 		public void onUserInfoUpdated(UserInfo oldInfo, UserInfo newInfo) 
 		{
-			Toast.makeText(getApplicationContext(), "update user info succeed", Toast.LENGTH_LONG).show();
+			Toast.makeText(getApplicationContext(), "Update personal information succeed.", Toast.LENGTH_LONG).show();
 			mUserInfo=newInfo;
 		}
 		
 		@Override
 		public void onUserInfoUpdateFailed(NetMessageError msg) 
 		{
-			Toast.makeText(getApplicationContext(), "update user info failed", Toast.LENGTH_LONG).show();
+			Toast.makeText(getApplicationContext(), "Update personal information failed:"+msg.getErrorStr(), Toast.LENGTH_LONG).show();
 		}
 	};
 	
@@ -80,16 +69,14 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		
 		this.beforePreferenceSceneCreate();
 		
-		//setContentView(R.layout.activity_personal_info);
-		if (mCanEdit) addPreferencesFromResource(R.xml.pref_personal_info);
-		else addPreferencesFromResource(R.xml.pref_personal_info_other);
+		addPreferencesFromResource(R.xml.pref_personal_info_other);
 
 		// bind all preferences to a special OnPreferenceChangeListener
 		listSexPreference = (ListPreference) findPreference("list_sex");
 		editTextNicknamePreference = (EditTextPreference) findPreference("edit_nickname");
 		editTextSignaturePreference = (EditTextPreference) findPreference("edit_signature");
 		selectImagePreference = (SelectImagePreference) findPreference("select_image_icon");
-		if (!mCanEdit) buttonChatPreference = (Preference) findPreference("button_chat");
+		buttonOtherPreference = (Preference) findPreference("button_other");
 		
 		this.afterPreferenceSceneCreate();
 		AppController.getInstance().getAccountManager().addUserInfoUpdateListener(mUserInfoUpdateListener);
@@ -151,7 +138,24 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 		
 		if (mCanEdit == true) 
 		{
-
+			buttonOtherPreference.setTitle(R.string.save_personal_information);
+			buttonOtherPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() 
+			{
+				@Override
+				public boolean onPreferenceClick(Preference preference) 
+				{
+					UserInfo newUserInfo=buildUserInfoFromPreference();
+					if(hasUserInfoChanged(mUserInfo, newUserInfo))
+					{
+						AppController.getInstance().getAccountManager().reqUpdateUserInfo(newUserInfo);
+					}
+					else
+					{
+						Toast.makeText(getApplicationContext(), "Personal information not changed yet.", Toast.LENGTH_LONG).show();
+					}
+					return true;
+				}
+			});
 		}
 		else
 		{
@@ -159,8 +163,9 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 			editTextNicknamePreference.setSelectable(false);
 			editTextSignaturePreference.setSelectable(false);
 			selectImagePreference.setSelectable(false);
+			buttonOtherPreference.setTitle(R.string.person_send_message);
 			
-			buttonChatPreference.setOnPreferenceClickListener(new OnPreferenceClickListener()
+			buttonOtherPreference.setOnPreferenceClickListener(new OnPreferenceClickListener()
 			{
 				@Override
 				public boolean onPreferenceClick(Preference preference)
@@ -185,32 +190,20 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 	 * A preference value change listener that updates the preference's summary
 	 * to reflect its new value.
 	 */
-	private Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+	private Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener()
+	{
 		@Override
 		public boolean onPreferenceChange(Preference preference, Object value)
 		{
 			String stringValue = value.toString();
 
 			AppController app = AppController.getInstance();
-			UserInfo ownerUserInfo = mUserInfo;
-			boolean hasChanged = false;
 			
 			if (preference instanceof EditTextPreference)
 			{
 				// For all other preferences, set the summary to the value's
 				// simple string representation.
 				preference.setSummary(stringValue);
-				
-				
-				if (preference.getKey().equals("edit_nickname")) 
-				{
-					hasChanged = !(((EditTextPreference) preference).getText().equals(ownerUserInfo.getName()));
-				}
-				else if (preference.getKey().equals("edit_signature"))
-				{
-					hasChanged = !((EditTextPreference) preference).getText().equals(ownerUserInfo.getSignature());
-				}
-				
 			}
 			else if (preference instanceof ListPreference) 
 			{
@@ -221,26 +214,6 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 
 				// Set the summary to reflect the new value.
 				preference.setSummary(index >= 0 ? listPreference.getEntries()[index]:null);
-				if (preference.getKey() == "list_sex")
-				{
-					hasChanged = !(listPreference.getValue().equals(""+ownerUserInfo.getSex()));
-				}				
-			}
-			else if (preference instanceof SelectImagePreference) 
-			{
-				hasChanged = !(((String)(value)).equals(ownerUserInfo.getIcon()));
-			}
-			
-			if (mCanEdit && hasChanged) 
-			{
-				UserInfo userInfo = new UserInfo(
-						mUserInfo.getID(),
-						listSexPreference.getValue().equals("0")? UserInfo.SEX_MALE: UserInfo.SEX_FEMALE,
-						editTextNicknamePreference.getText(), 
-						editTextSignaturePreference.getText(), 
-						selectImagePreference.getSelectedImageName());
-				
-				AppController.getInstance().getAccountManager().reqUpdateUserInfo(userInfo);
 			}
 			
 			return true;
@@ -268,5 +241,27 @@ public class PersonalInfoActivity extends PreferenceActivity implements OnPrefer
 				preference,
 				PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(preference.getKey(),
 				""));
+	}
+	
+	private UserInfo buildUserInfoFromPreference()
+	{
+		UserInfo userInfo = new UserInfo(
+				mUserInfo.getID(),
+				listSexPreference.getValue().equals("0")? UserInfo.SEX_MALE: UserInfo.SEX_FEMALE,
+				editTextNicknamePreference.getText(), 
+				editTextSignaturePreference.getText(), 
+				selectImagePreference.getSelectedImageName());
+		
+		return userInfo;
+	}
+	
+	private boolean hasUserInfoChanged(UserInfo userInfo1,UserInfo userInfo2)
+	{
+		return !(userInfo1.getID()==userInfo2.getID()
+				&&userInfo1.getName().equals(userInfo2.getName())
+				&&userInfo1.getIcon().equals(userInfo2.getIcon())
+				&&userInfo1.getSex()==userInfo2.getSex()
+				&&userInfo1.getSignature().equals(userInfo2.getSignature())
+				);
 	}
 }
