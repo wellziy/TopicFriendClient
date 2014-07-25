@@ -161,7 +161,7 @@ public class FriendChatManager implements NetMessageHandler
 		
 		//save message to db
 		MessageDAO msgDAO=new MessageDAO(AppController.getInstance().getContext());
-		msgDAO.insertMessageInfo(msgInfo);
+		msgDAO.insertMessageInfo(accountMan.getLoginUserInfo().getID(),msgInfo);
 	}
 	
 	///////////////////////////
@@ -177,7 +177,7 @@ public class FriendChatManager implements NetMessageHandler
 		
 		//save message to db
 		MessageDAO msgDAO=new MessageDAO(AppController.getInstance().getContext());
-		msgDAO.insertMessageInfo(msgInfo);
+		msgDAO.insertMessageInfo(accountMan.getLoginUserInfo().getID(),msgInfo);
 		
 		//notify all listeners
 		for(int i=0;i<mFriendChatListener.size();i++)

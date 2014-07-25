@@ -17,6 +17,7 @@ public class MessageDAO extends SQLiteOpenHelper
 	private static final String TABLE_NAME="messages";
 	
 	public static final String KEY_ID="id";
+	public static final String KEY_OID="oid";
 	public static final String KEY_SID="sid";
 	public static final String KEY_TID="tid";
 	public static final String KEY_CONTENT="content";
@@ -33,6 +34,7 @@ public class MessageDAO extends SQLiteOpenHelper
 		String SQL_CREATE_TABLE="create table "+TABLE_NAME
 		+"("
 		+KEY_ID+" integer primary key autoincrement,"
+		+KEY_OID+" integer,"
 		+KEY_SID+" integer,"
 		+KEY_TID+" integer,"
 		+KEY_CONTENT+" text,"
@@ -48,11 +50,12 @@ public class MessageDAO extends SQLiteOpenHelper
 		// TODO Auto-generated method stub
 	}
 	
-	public void insertMessageInfo(MessageInfo msgInfo)
+	public void insertMessageInfo(int oid,MessageInfo msgInfo)
 	{
 		SQLiteDatabase db=this.getWritableDatabase();
 		
 		ContentValues values=new ContentValues();
+		values.put(KEY_OID, oid);
 		values.put(KEY_SID, msgInfo.getSenderID());
 		values.put(KEY_TID, msgInfo.getTargetID());
 		values.put(KEY_CONTENT,msgInfo.getContent());
@@ -63,11 +66,11 @@ public class MessageDAO extends SQLiteOpenHelper
 		db.close();
 	}
 	
-	public ArrayList<MessageInfo> fetchFriendChatMessageWithLimit(int fid,int limit)
+	public ArrayList<MessageInfo> fetchFriendChatMessageWithLimit(int oid,int fid,int limit)
 	{
 		SQLiteDatabase db=this.getReadableDatabase();
 		Cursor cursor=db.query(TABLE_NAME, new String[]{KEY_SID,KEY_TID,KEY_CONTENT,KEY_TS}, 
-				KEY_SID+"=? or "+KEY_TID+"=?", new String[]{""+fid,""+fid}, 
+				KEY_OID+"=? and ("+KEY_SID+"=? or "+KEY_TID+"=?)", new String[]{""+oid,""+fid,""+fid}, 
 				null, null, null, ""+limit);
 		ArrayList<MessageInfo> res=convertCursorToArrayList(cursor);
 		db.close();

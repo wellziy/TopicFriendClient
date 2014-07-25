@@ -152,7 +152,7 @@ public class ChatRoomActivity extends Activity implements TopicChatListener
 		
 		ImageView iconImage=(ImageView) view.findViewById(R.id.icon_image);
 		iconImage.setImageBitmap(ResourceManager.getInstance().getBitmapFromAsset(iconPath));
-		int iconSize=ResourceManager.getInstance().ScreenWidth/6;
+		int iconSize=Math.min(ResourceManager.getInstance().ScreenWidth,ResourceManager.getInstance().ScreenHeight)/6;
 		iconImage.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
 		TextView contentText=(TextView)view.findViewById(R.id.content_text);
 		contentText.setText(content);

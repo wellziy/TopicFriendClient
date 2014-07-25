@@ -202,9 +202,16 @@ public class AccountManager implements NetMessageHandler
 		MessageDAO msgDAO=new MessageDAO(AppController.getInstance().getContext());
 		for(UserInfo friendInfo:msgLoginSucceed.getFriendInfoList())
 		{
-			ArrayList<MessageInfo> msgArr = msgDAO.fetchFriendChatMessageWithLimit(friendInfo.getID(), 100);
+			ArrayList<MessageInfo> msgArr = msgDAO.fetchFriendChatMessageWithLimit(mLoginUserInfo.getID(),friendInfo.getID(), 100);
 			friendChatMan.addMessageInfoList(msgArr,true);
 		}
+		
+		//save all unread messages to database
+		for(MessageInfo msgInfo:msgLoginSucceed.getUnreadMessageList())
+		{
+			msgDAO.insertMessageInfo(mLoginUserInfo.getID(), msgInfo);
+		}
+		//add the unread message list to friend chat manager
 		friendChatMan.addMessageInfoList(msgLoginSucceed.getUnreadMessageList(),false);
 		friendChatMan.registerMessageHandler();
 		
