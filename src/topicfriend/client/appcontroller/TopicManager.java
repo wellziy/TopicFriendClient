@@ -17,6 +17,11 @@ public class TopicManager
 	{
 	}
 	
+	public void resetLoginState()
+	{
+		mTopicMap.clear();
+	}
+	
 	public void addTopicInfoList(ArrayList<TopicInfo> topicList) 
 	{
 		mTopicMap.clear();

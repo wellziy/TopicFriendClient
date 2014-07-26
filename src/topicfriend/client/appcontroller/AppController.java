@@ -39,6 +39,16 @@ public class AppController
 		mContext=context;
 	}
 	
+	public void resetLoginState()
+	{
+		mAccountManager.resetLoginState();
+		mFriendChatManager.resetLoginState();
+		mFriendManager.resetLoginState();
+		mTopicChatManager.resetLoginState();
+		mTopicManager.resetLoginState();
+		mNetManager.resetLoginState();
+	}
+	
 	public static synchronized void purgeInstance() 
 	{
 		sController = null;

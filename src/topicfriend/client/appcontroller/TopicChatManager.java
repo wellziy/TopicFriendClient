@@ -39,6 +39,15 @@ public class TopicChatManager implements NetMessageHandler
 		mTopicChatListener.add(listener);
 	}
 	
+	public void resetLoginState()
+	{
+		mTopicChatListener.clear();
+		mMatchedUserInfo=null;
+		mLastMatchingTopicID=Consts.InvalidID;
+		mMatchedTopicID=Consts.InvalidID;
+		mMatchingCounter=0;
+	}
+	
 	public void removeTopicChatListener(TopicChatListener listener)
 	{
 		mTopicChatListener.remove(listener);

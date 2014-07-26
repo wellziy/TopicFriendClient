@@ -11,12 +11,16 @@ import topicfriend.client.base.LoginListener;
 import topicfriend.client.netwrapper.NetMessageReceiver;
 import topicfriend.netmessage.NetMessageError;
 import topicfriend.netmessage.NetMessageLoginSucceed;
-import android.R.attr;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -29,23 +33,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/**
- * Activity which displays a login screen to the user, offering registration as
- * well.
- */
+//Activity which displays a login screen to the user, offering registration as well.
 public class LoginActivity extends Activity 
 {
-	/**
-	 * A dummy authentication store containing known user names and passwords.
-	 * TODO: remove after connecting to a real authentication system.
-	 */
-	private static final String[] DUMMY_CREDENTIALS = new String[] { "foo@example.com:hello", "bar@example.com:world" };
-
-	/**
-	 * The default email to populate the email field with.
-	 */
-	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
-
+	private final String PREFERENCE_NAME="TopicFriend";
+	private final int PREFERENCE_MODE=Context.MODE_PRIVATE;
+	
 	// Values for email and password at the time of the login attempt.
 	private String mEmail;
 	private String mPassword;
@@ -56,25 +49,25 @@ public class LoginActivity extends Activity
 	private View mLoginFormView;
 	private View mLoginStatusView;
 	private TextView mLoginStatusMessageView;
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 
 	{
 		super.onCreate(savedInstanceState);
-		// create AppActivityManager to manage all activities
-		AppController.getInstance().getAppActivityManager().onActivityCreate(this);
-		this.initApplication();
 		setContentView(R.layout.activity_login);
 
 		//force set action bar title
 		getActionBar().setTitle("TopicFriend");
 		
-		// Set up the login form.
-		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
+		loadEmailPasswordFromPerference();
+		
+		//email view
 		mEmailView = (EditText) findViewById(R.id.email);
 		mEmailView.setText(mEmail);
-
+		//password view
 		mPasswordView = (EditText) findViewById(R.id.password);
+		mPasswordView.setText(mPassword);
+		
 		mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener()
 		{
 			@Override
@@ -93,7 +86,8 @@ public class LoginActivity extends Activity
 		mLoginStatusView = findViewById(R.id.login_status);
 		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
 
-		findViewById(R.id.sign_in_button).setOnClickListener(new View.OnClickListener()
+		//sign in button
+		this.findViewById(R.id.sign_in_button).setOnClickListener(new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View view) 
@@ -104,7 +98,9 @@ public class LoginActivity extends Activity
 				}
 			}
 		});
-		findViewById(R.id.register_button).setOnClickListener(new View.OnClickListener()
+		
+		//register button
+		this.findViewById(R.id.register_button).setOnClickListener(new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View arg0) 
@@ -115,8 +111,13 @@ public class LoginActivity extends Activity
 				}
 			}
 		});
+		
+		//init the application
+		initApplication();
+		//put this activity to AppActivityManager and init the application
+		AppController.getInstance().getAppActivityManager().onActivityCreate(this);
 	}
-	
+
 	@Override
 	protected void onDestroy() 
 	{
@@ -149,14 +150,11 @@ public class LoginActivity extends Activity
 		super.onStop();
 	}
 	
-	/**
-	 * Attempts to sign in or register the account specified by the login form.
-	 * If there are form errors (invalid email, missing fields, etc.), the
-	 * errors are presented and no actual login attempt is made.
-	 */
+	//Attempts to sign in or register the account specified by the login form.
+	//If there are form errors (invalid email, missing fields, etc.), the
+	//errors are presented and no actual login attempt is made.
 	public boolean validateInput() 
 	{
-		
 		// Reset errors.
 		mEmailView.setError(null);
 		mPasswordView.setError(null);
@@ -256,6 +254,7 @@ public class LoginActivity extends Activity
 			public void onLoginSucceed(NetMessageLoginSucceed msgLoginSucceed)
 			{
 				accountMan.removeLoginListener(this);
+				saveEmailPasswordToPerference();
 				startActivity(new Intent(getApplicationContext(), MainActivity.class));
 			}
 			
@@ -288,6 +287,45 @@ public class LoginActivity extends Activity
 		NetworkManager netMan=AppController.getInstance().getNetworkManager();
 		netMan.initNetwork();
 		
+		netMan.addConnectionListener(new ConnectionListener()
+		{
+			@Override
+			public void onConnectionLost()
+			{
+				AppActivityManager actMan=AppController.getInstance().getAppActivityManager();
+				
+				//create network error dialog
+				AlertDialog.Builder builder=new AlertDialog.Builder(actMan.getLastestActivity());
+				builder.setTitle("Network error");
+				builder.setMessage("Please check your network,and login again!");
+				builder.setCancelable(false);
+				builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
+				{	
+					@Override
+					public void onClick(DialogInterface dialog, int which)
+					{
+						//start the new activity and clear all top activity
+						//there is no need to call AppController::resetLoginState,
+						//since this will cause the activity call Login::onDestroy where and the current application controller singleton will be destroyed
+						Intent intent=new Intent(LoginActivity.this,LoginActivity.class);
+						intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						LoginActivity.this.startActivity(intent);
+					}
+				});
+				builder.create().show();
+			}
+			
+			@Override
+			public void onConnectSucceed() 
+			{
+			}
+			
+			@Override
+			public void onConnectFailed()
+			{
+			}
+		});
+		
         // init resource manager
         DisplayMetrics metric = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metric);
@@ -295,9 +333,25 @@ public class LoginActivity extends Activity
 		ResourceManager.ScreenHeight = (int) metric.heightPixels;
 	}
 	
-	/**
-	 * Shows the progress UI and hides the login form.
-	 */
+	private void saveEmailPasswordToPerference()
+	{
+		SharedPreferences pref=this.getSharedPreferences(PREFERENCE_NAME,PREFERENCE_MODE);
+		Editor editor=pref.edit();
+		
+		editor.putString("email", mEmail);
+		editor.putString("password", mPassword);
+		
+		editor.commit();
+	}
+	
+	private void loadEmailPasswordFromPerference()
+	{
+		SharedPreferences pref=this.getSharedPreferences(PREFERENCE_NAME,PREFERENCE_MODE);
+		mEmail=pref.getString("email", "");
+		mPassword=pref.getString("password", "");
+	}
+	
+	//Shows the progress UI and hides the login form.
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
 	private void showProgress(final boolean show)
 	{

@@ -25,6 +25,20 @@ public class AppActivityManager
 		}
 	}
 	
+	public int getCurrentActivityCount()
+	{
+		return mActivityList.size();
+	}
+	
+	public Activity getLastestActivity()
+	{
+		if(mActivityList.size()<=0)
+		{
+			return null;
+		}
+		return mActivityList.get(mActivityList.size()-1);
+	}
+	
 	public void popAllActivities()
 	{
 		// finished activity from down to top

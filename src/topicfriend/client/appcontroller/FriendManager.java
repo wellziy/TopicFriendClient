@@ -14,6 +14,11 @@ public class FriendManager
 		m_friendList=new HashMap<Integer, UserInfo>();
 	}
 	
+	public void resetLoginState()
+	{
+		m_friendList.clear();
+	}
+	
 	public void addFriendInfoList(ArrayList<UserInfo> list)
 	{
 		for(int i=0;i<list.size();i++)

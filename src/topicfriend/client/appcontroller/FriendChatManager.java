@@ -35,6 +35,12 @@ public class FriendChatManager implements NetMessageHandler
 		}
 	}
 	
+	public void resetLoginState()
+	{
+		mFriendChatMap.clear();
+		mFriendChatListener.clear();
+	}
+	
 	public void addMessage(MessageInfo msgInfo,boolean hasRead)
 	{
 		AccountManager accountMan=AppController.getInstance().getAccountManager();

@@ -25,8 +25,6 @@ public class AccountManager implements NetMessageHandler
 	private ArrayList<LoginListener> mLoginListener=new ArrayList<LoginListener>();
 	private ArrayList<UserInfoUpdateListener> mUserInfoUpdateListener=new ArrayList<UserInfoUpdateListener>();
 	
-	private String mLastUserName="";
-	private String mLastPassword="";
 	private UserInfo mNeedUpdateInfo=null;
 	
 	///////////////////////////////
@@ -69,20 +67,21 @@ public class AccountManager implements NetMessageHandler
 	
 	public void login(String userName,String password)
 	{
-		mLastUserName=userName;
-		mLastPassword=password;
-		
 		//send login message here
 		NetMessageLogin msgLogin=new NetMessageLogin(userName, password);
 		AppController.getInstance().getNetworkManager().sendDataOne(msgLogin);
 		registerMessagedHandler();
 	}
 	
+	public void resetLoginState()
+	{
+		mLoginUserInfo=null;
+		mLoginListener.clear();
+		mUserInfoUpdateListener.clear();
+	}
+	
 	public void register(String userName,String password)
 	{
-		mLastUserName=userName;
-		mLastPassword=password;
-		
 		//send register message here
 		NetMessageRegister msgRegister=new NetMessageRegister(userName, password, UserInfo.SEX_MALE);
 		AppController.getInstance().getNetworkManager().sendDataOne(msgRegister);
@@ -92,16 +91,6 @@ public class AccountManager implements NetMessageHandler
 	public boolean isUserLogin()
 	{
 		return mLoginUserInfo!=null;
-	}
-	
-	public String getLastUserName()
-	{
-		return mLastUserName;
-	}
-	
-	public String getLastPassword()
-	{
-		return mLastPassword;
 	}
 	
 	public String getUserName()

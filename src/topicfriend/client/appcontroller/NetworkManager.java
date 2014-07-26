@@ -60,6 +60,12 @@ public class NetworkManager implements BadConnectionHandler
 		mConnection = Network.NULL_CONNECTION;
 	}
 	
+	public void resetLoginState()
+	{
+		mConnection=Network.NULL_CONNECTION;
+		mConnectionListener.clear();
+	}
+	
 	public boolean isConnected()
 	{
 		return mConnection!=Network.NULL_CONNECTION;
